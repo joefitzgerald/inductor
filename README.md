@@ -3,8 +3,8 @@ Inductor
 
 #### Build Status
 
-* Master: [![Build Status - Master](https://travis-ci.org/joefitzgerald/inductor.png?branch=master)](https://travis-ci.org/joefitzgerald/inductor)
-* Develop: [![Build Status - Develop](https://travis-ci.org/joefitzgerald/inductor.png?branch=develop)](https://travis-ci.org/joefitzgerald/inductor)
+* `Master ` [![Build Status - Master](https://travis-ci.org/joefitzgerald/inductor.png?branch=master)](https://travis-ci.org/joefitzgerald/inductor)
+* `Develop` [![Build Status - Develop](https://travis-ci.org/joefitzgerald/inductor.png?branch=develop)](https://travis-ci.org/joefitzgerald/inductor)
 
 ### Introduction
 
