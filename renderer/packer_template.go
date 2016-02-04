@@ -16,23 +16,26 @@ type PackerTemplate struct {
 // any provided template file overrides if they exist.
 func NewPackerTemplateWithOverrides(packerTplPath string, autounattendTplPath string, vagrantfileTplPath string) *PackerTemplate {
 	tpl := NewPackerTemplate()
+	warnUsingDefault := func(file string) {
+		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", file))
+	}
 	packerTpl, err := ioutil.ReadFile(packerTplPath)
 	if err == nil {
 		tpl.PackerTpl = string(packerTpl)
 	} else {
-		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", packerTplPath))
+		warnUsingDefault(packerTplPath)
 	}
 	autounattendTpl, err := ioutil.ReadFile(autounattendTplPath)
 	if err == nil {
 		tpl.AutounattendTpl = string(autounattendTpl)
 	} else {
-		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", autounattendTplPath))
+		warnUsingDefault(autounattendTplPath)
 	}
 	vagrantfileTpl, err := ioutil.ReadFile(vagrantfileTplPath)
 	if err == nil {
 		tpl.VagrantfileTpl = string(vagrantfileTpl)
 	} else {
-		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", vagrantfileTplPath))
+		warnUsingDefault(vagrantfileTplPath)
 	}
 	return tpl
 }
