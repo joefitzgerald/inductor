@@ -2,10 +2,13 @@ package osregistry
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
-	"strings"
 )
+
+// OperatingSystemRegistry contains all OS details
+type OperatingSystemRegistry struct {
+	OperatingSystems map[string]OperatingSystem
+}
 
 // OperatingSystem has all the OS specific details required for Packer
 type OperatingSystem struct {
@@ -18,15 +21,30 @@ type OperatingSystem struct {
 	WindowsImageName      string `json:"windows_image_name"`
 }
 
-// OperatingSystems contains all configuration data loaded from disk
-type OperatingSystems struct {
-	All map[string]OperatingSystem
+// List all available OS names
+func (reg *OperatingSystemRegistry) List() []string {
+	keys := make([]string, len(reg.OperatingSystems))
+	i := 0
+	for k := range reg.OperatingSystems {
+		keys[i] = k
+		i++
+	}
+	return keys
 }
 
-// New creates a fully initialized instance of an OperatingSystem using the
-// stored data on disk.
-func New(osName string, osRegistry io.Reader) (*OperatingSystem, error) {
-	osKey := strings.ToLower(osName)
+// Get returns the OS details for the named OS if found
+func (reg *OperatingSystemRegistry) Get(osName string) (*OperatingSystem, bool) {
+	os, ok := reg.OperatingSystems[osName]
+	if ok {
+		return &os, ok
+	}
+	return nil, ok
+}
+
+// New creates an initialized OS Registry instance
+func New(osRegistry io.Reader) (*OperatingSystemRegistry, error) {
+	registry := OperatingSystemRegistry{}
+	registry.OperatingSystems = make(map[string]OperatingSystem)
 
 	// decode outermost map of values keyed by OS name
 	var objmap map[string]*json.RawMessage
@@ -35,21 +53,16 @@ func New(osName string, osRegistry io.Reader) (*OperatingSystem, error) {
 		return nil, err
 	}
 
-	// find the specified OS
-	val, ok := objmap[osKey]
-	if !ok {
-		return nil, fmt.Errorf("Could not find %s", osName)
+	// decode each entry
+	for k, v := range objmap {
+		var os OperatingSystem
+		err := json.Unmarshal(*v, &os)
+		if err != nil {
+			return nil, err
+		}
+		os.Name = k
+		registry.OperatingSystems[k] = os
 	}
 
-	// decode the specified OS into an OperatingSystem object
-	var os OperatingSystem
-	err := json.Unmarshal(*val, &os)
-	if err != nil {
-		return nil, err
-	}
-
-	// manually populate the name since its the map key
-	os.Name = osKey
-
-	return &os, nil
+	return &registry, nil
 }

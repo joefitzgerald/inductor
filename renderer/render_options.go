@@ -1,10 +1,6 @@
 package renderer
 
-import (
-	"os"
-
-	"github.com/joefitzgerald/inductor/osregistry"
-)
+import "github.com/joefitzgerald/inductor/osregistry"
 
 // RenderOptions for packer.json and Autounattend.xml
 type RenderOptions struct {
@@ -28,28 +24,16 @@ type RenderOptions struct {
 
 // NewRenderOptionsWithOverrides creates render options using the base OS
 // registry with any provided overrides.
-func NewRenderOptionsWithOverrides(windowsEdition string, osregistryFilePath string) (*RenderOptions, error) {
-	file, err := os.Open(osregistryFilePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	r, err := osregistry.New(windowsEdition, file)
-	if err != nil {
-		return nil, err
-	}
-
+func NewRenderOptionsWithOverrides(os *osregistry.OperatingSystem) (*RenderOptions, error) {
 	// default all rendering options to values in the OS registry
 	opts := NewRenderOptions()
-	opts.OSName = r.Name
-	opts.IsoChecksum = r.IsoChecksum
-	opts.IsoChecksumType = r.IsoChecksumType
-	opts.IsoURL = r.IsoURL
-	opts.VirtualboxGuestOsType = r.VirtualboxGuestOsType
-	opts.VmwareGuestOsType = r.VmwareGuestOsType
-	opts.WindowsImageName = r.WindowsImageName
-
+	opts.OSName = os.Name
+	opts.IsoChecksum = os.IsoChecksum
+	opts.IsoChecksumType = os.IsoChecksumType
+	opts.IsoURL = os.IsoURL
+	opts.VirtualboxGuestOsType = os.VirtualboxGuestOsType
+	opts.VmwareGuestOsType = os.VmwareGuestOsType
+	opts.WindowsImageName = os.WindowsImageName
 	return opts, nil
 }
 

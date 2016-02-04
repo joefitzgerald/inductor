@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
+	"github.com/joefitzgerald/inductor/osregistry"
 	"github.com/joefitzgerald/inductor/renderer"
 )
 
@@ -72,16 +73,38 @@ func newApp() *cli.App {
 		},
 	}
 	app.Action = func(c *cli.Context) {
+		// load the OS registry data
+		file, err := os.Open(c.String("osregistry"))
+		if err != nil {
+			die("Couldn't find the requried Windows OS registry file", err)
+		}
+		defer file.Close()
+
+		osRegistry, err := osregistry.New(file)
+		if err != nil {
+			die("Couldn't load the Windows OS registry", err)
+		}
+
 		// get our required windows version/edition string, e.g. 'windows10'
 		var windowsEdition string
 		if len(c.Args()) > 0 {
 			windowsEdition = c.Args()[0]
 		} else {
-			die("You must specify a Windows edition/version argument")
+			fmt.Println("Available OSs:")
+			fmt.Println()
+			for _, s := range osRegistry.List() {
+				fmt.Println(fmt.Sprintf("  %s", s))
+			}
+			fmt.Println()
+			die("You must specify an operating system argument")
 		}
 
 		// create the default options set based on the OS registry info
-		opts, err := renderer.NewRenderOptionsWithOverrides(windowsEdition, c.String("osregistry"))
+		windows, ok := osRegistry.Get(windowsEdition)
+		if !ok {
+			die("Couldn't find OS registration for '%s'", windowsEdition)
+		}
+		opts, err := renderer.NewRenderOptionsWithOverrides(windows)
 		if err != nil {
 			die(err)
 		}
