@@ -30,7 +30,7 @@ func NewPackerTemplateWithOverrides(packerTplPath string, autounattendTplPath st
 	}
 	vagrantfileTpl, err := ioutil.ReadFile(vagrantfileTplPath)
 	if err == nil {
-		tpl.AutounattendTpl = string(vagrantfileTpl)
+		tpl.VagrantfileTpl = string(vagrantfileTpl)
 	} else {
 		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", vagrantfileTplPath))
 	}
