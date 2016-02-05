@@ -2,15 +2,8 @@ package renderer
 
 import (
 	"io"
-	"strings"
 	"text/template"
 )
-
-var templateFuncs = template.FuncMap{
-	"Replace": strings.Replace,
-	"ToUpper": strings.ToUpper,
-	"ToLower": strings.ToLower,
-}
 
 // Render generates the packer.json and Autounattend.xml files used by Packer
 func (pt *PackerTemplate) Render(ro *RenderOptions, packerJSON io.Writer, autounattendXML io.Writer, vagrantfile io.Writer) error {
