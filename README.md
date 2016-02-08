@@ -78,6 +78,8 @@ text/tepmlate used to generate the box Vagrantfile.
 Autounattend.xml
 - `--skipwindowsupdates` When specified the Windows Update step will be skipped.
 - `--gui` When specified Packer will run the VM in GUI mode (headless=false).
+- `--ssh` When specified Packer will use the SSH communicator with OpenSSH
+instead of WinRM. WinRM will still be configured on the box for Vagrant.
 
 ## OS Registry
 

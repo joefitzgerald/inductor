@@ -68,6 +68,10 @@ func newApp() *cli.App {
 			Usage: "Skips running Windows updates on first boot",
 		},
 		cli.BoolFlag{
+			Name:  "ssh",
+			Usage: "Uses the Packer SSH communicator instead of the default WinRM",
+		},
+		cli.BoolFlag{
 			Name:  "gui, g",
 			Usage: "Run the VM with a GUI",
 		},
@@ -113,6 +117,9 @@ func newApp() *cli.App {
 		opts.WindowsUpdates = !c.Bool("skipwindowsupdates")
 		opts.Headless = !c.Bool("gui")
 		opts.ProductKey = c.String("productkey")
+		if c.Bool("ssh") {
+			opts.Communicator = "ssh"
+		}
 
 		// read in the packer.json.tpl
 		packerJSON, err := os.Create(c.String("packer"))

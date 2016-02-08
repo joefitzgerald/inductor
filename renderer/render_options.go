@@ -49,7 +49,7 @@ func NewRenderOptions() *RenderOptions {
 		IsoURL:                "http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X64FRE_EN-US.ISO",
 		IsoChecksumType:       "sha1",
 		IsoChecksum:           "56ab095075be28a90bc0b510835280975c6bb2ce",
-		Communicator:          "ssh",
+		Communicator:          "winrm",
 		Username:              "vagrant",
 		Password:              "vagrant",
 		DiskSize:              61400,

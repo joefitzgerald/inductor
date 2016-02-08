@@ -53,9 +53,16 @@ func NewPackerTemplate() *PackerTemplate {
       "iso_checksum": "{{.IsoChecksum}}",
       "headless": {{.Headless}},
       "boot_wait": "2m",
-      "ssh_username": "{{.Username}}",
+      {{ if eq .Communicator "ssh" }}
+			"ssh_username": "{{.Username}}",
       "ssh_password": "{{.Password}}",
-      "ssh_wait_timeout": "2h",
+			"ssh_wait_timeout": "8h",
+			{{ else }}
+			"communicator": "winrm",
+			"winrm_username": "{{.Username}}",
+      "winrm_password": "{{.Password}}",
+			"winrm_timeout": "8h",
+			{{ end }}
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "guest_os_type": "{{.VmwareGuestOsType}}",
       "tools_upload_flavor": "windows",
@@ -63,11 +70,13 @@ func NewPackerTemplate() *PackerTemplate {
       "vnc_port_min": 5900,
       "vnc_port_max": 5980,
       "floppy_files": [
-        "Autounattend.xml",
+        "./Autounattend.xml",
+        "./scripts/hotfix-KB3102810.bat",
         "./scripts/fixnetwork.ps1",
         "./scripts/microsoft-updates.bat",
         "./scripts/win-updates.ps1",
-        "./scripts/openssh.ps1"
+        "./scripts/openssh.ps1",
+        "./scripts/winrm.ps1"
       ],
       "vmx_data": {
         "RemoteDisplay.vnc.enabled": "false",
@@ -84,18 +93,27 @@ func NewPackerTemplate() *PackerTemplate {
       "iso_checksum": "{{.IsoChecksum}}",
       "headless": {{.Headless}},
       "boot_wait": "2m",
-      "ssh_username": "{{.Username}}",
+      {{ if eq .Communicator "ssh" }}
+			"ssh_username": "{{.Username}}",
       "ssh_password": "{{.Password}}",
-      "ssh_wait_timeout": "2h",
+			"ssh_wait_timeout": "8h",
+			{{ else }}
+			"communicator": "winrm",
+			"winrm_username": "{{.Username}}",
+      "winrm_password": "{{.Password}}",
+			"winrm_timeout": "8h",
+			{{ end }}
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
       "guest_os_type": "{{.VirtualboxGuestOsType}}",
       "disk_size": {{.DiskSize}},
       "floppy_files": [
-        "Autounattend.xml",
+        "./Autounattend.xml",
+        "./scripts/hotfix-KB3102810.bat",
         "./scripts/fixnetwork.ps1",
         "./scripts/microsoft-updates.bat",
         "./scripts/win-updates.ps1",
         "./scripts/openssh.ps1",
+        "./scripts/winrm.ps1",
         "./scripts/oracle-cert.cer"
       ],
       "vboxmanage": [
@@ -115,6 +133,7 @@ func NewPackerTemplate() *PackerTemplate {
     }
   ],
   "provisioners": [
+    {{ if eq .Communicator "ssh" }}
     {
       "type": "shell",
       "remote_path": "/tmp/script.bat",
@@ -128,10 +147,22 @@ func NewPackerTemplate() *PackerTemplate {
         "./scripts/compact.bat"
       ]
     }
+    {{ else }}
+    {
+      "type": "windows-shell",
+      "scripts": [
+        "./scripts/vm-guest-tools.bat",
+        "./scripts/disable-auto-logon.bat",
+        "./scripts/enable-rdp.bat",
+        "./scripts/compile-dotnet-assemblies.bat",
+        "./scripts/compact.bat"
+      ]
+    }
+    {{ end }}
   ],
   "post-processors": [
     {
-			"type": "vagrant",
+      "type": "vagrant",
       "keep_input_artifact": false,
       "output": "{{.OSName}}_{{"{{"}}.Provider{{"}}"}}.box",
       "vagrantfile_template": "Vagrantfile"
@@ -173,9 +204,9 @@ func NewPackerTemplate() *PackerTemplate {
                 <FullName>{{.Username}}</FullName>
                 <Organization></Organization>
                 <ProductKey>
-										{{ if .ProductKey }}
-										<Key>{{.ProductKey}}</Key>
-										{{ end }}
+                    {{ if .ProductKey }}
+                    <Key>{{.ProductKey}}</Key>
+                    {{ end }}
                     <WillShowUI>Never</WillShowUI>
                 </ProductKey>
             </UserData>
@@ -272,84 +303,6 @@ func NewPackerTemplate() *PackerTemplate {
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm quickconfig -q</CommandLine>
-                    <Description>winrm quickconfig -q</Description>
-                    <Order>5</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm quickconfig -transport:http</CommandLine>
-                    <Description>winrm quickconfig -transport:http</Description>
-                    <Order>6</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm set winrm/config @{MaxTimeoutms="1800000"}</CommandLine>
-                    <Description>Win RM MaxTimoutms</Description>
-                    <Order>7</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm set winrm/config/winrs @{MaxMemoryPerShellMB="800"}</CommandLine>
-                    <Description>Win RM MaxMemoryPerShellMB</Description>
-                    <Order>8</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm set winrm/config/service @{AllowUnencrypted="true"}</CommandLine>
-                    <Description>Win RM AllowUnencrypted</Description>
-                    <Order>9</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm set winrm/config/service/auth @{Basic="true"}</CommandLine>
-                    <Description>Win RM auth Basic</Description>
-                    <Order>10</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm set winrm/config/client/auth @{Basic="true"}</CommandLine>
-                    <Description>Win RM client auth Basic</Description>
-                    <Order>11</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"} </CommandLine>
-                    <Description>Win RM listener Address/Port</Description>
-                    <Order>12</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c netsh advfirewall firewall set rule group="remote administration" new enable=yes </CommandLine>
-                    <Description>Win RM adv firewall enable</Description>
-                    <Order>13</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c netsh firewall add portopening TCP 5985 "Port 5985" </CommandLine>
-                    <Description>Win RM port open</Description>
-                    <Order>14</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c net stop winrm </CommandLine>
-                    <Description>Stop Win RM Service </Description>
-                    <Order>15</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c sc config winrm start= auto</CommandLine>
-                    <Description>Win RM Autostart</Description>
-                    <Order>16</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c net start winrm</CommandLine>
-                    <Description>Start Win RM Service</Description>
-                    <Order>17</Order>
-                    <RequiresUserInput>true</RequiresUserInput>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
                     <CommandLine>%SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v HideFileExt /t REG_DWORD /d 0 /f</CommandLine>
                     <Order>18</Order>
                     <Description>Show file extensions in Explorer</Description>
@@ -385,21 +338,34 @@ func NewPackerTemplate() *PackerTemplate {
                     <Description>Disable password expiration for vagrant user</Description>
                 </SynchronousCommand>
                 {{ if .WindowsUpdates }}
+                <!-- Fix high CPU utilization on Windows7 when installing updates -->
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>cmd.exe /c a:\hotfix-KB3102810.bat</CommandLine>
+                    <Order>98</Order>
+                    <Description>KB3102810</Description>
+                </SynchronousCommand>
                 <!-- Include non-Windows MS updates -->
                 <SynchronousCommand wcm:action="add">
                     <CommandLine>cmd.exe /c a:\microsoft-updates.bat</CommandLine>
                     <Order>99</Order>
                     <Description>Enable Microsoft Updates</Description>
                 </SynchronousCommand>
-                <!-- Install Windows Updates, win-updates.ps1 will start SSH when done -->
+                <!-- Install Windows Updates, win-updates.ps1 will start SSH/WinRM when done -->
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File a:\win-updates.ps1</CommandLine>
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File a:\win-updates.ps1 -Communicator {{.Communicator}}</CommandLine>
                     <Description>Install Windows Updates</Description>
                     <Order>100</Order>
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 {{ else }}
-                <!-- Skipping Windows Updates, directly start SSH -->
+                <!-- Skipping Windows Updates, directly start SSH/WinRM -->
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File a:\winrm.ps1</CommandLine>
+                    <Description>Configure and start WinRM</Description>
+                    <Order>99</Order>
+                    <RequiresUserInput>true</RequiresUserInput>
+                </SynchronousCommand>
+                {{ if eq .Communicator "ssh" }}
                 <SynchronousCommand wcm:action="add">
                     <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File a:\openssh.ps1 -AutoStart</CommandLine>
                     <Description>Install OpenSSH</Description>
@@ -407,16 +373,16 @@ func NewPackerTemplate() *PackerTemplate {
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 {{ end }}
+                {{ end }}
             </FirstLogonCommands>
             <ShowWindowsLive>false</ShowWindowsLive>
         </component>
     </settings>
     <settings pass="specialize">
-        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+        <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
             <OEMInformation>
                 <HelpCustomized>false</HelpCustomized>
             </OEMInformation>
-            <!-- Rename computer here. -->
             <ComputerName>{{ SafeComputerName ( printf "vagrant-%s" ( Replace .OSName "windows" "win" -1 )) }}</ComputerName>
             <TimeZone>Pacific Standard Time</TimeZone>
             <RegisteredOwner/>
