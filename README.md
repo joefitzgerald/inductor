@@ -14,6 +14,10 @@ meant to be used alongside the scripts and templates which comes with
 
 ## Basic Usage
 
+Install inductor:
+
+`go get github.com/joefitzgerald/inductor`
+
 Inductor only supports one action by default, which is to generate the files
 necessary to build out a Windows Vagrant box via Packer:
 
