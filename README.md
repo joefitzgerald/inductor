@@ -92,6 +92,48 @@ Autounattend.xml
 - `--ssh` When specified Packer will use the SSH communicator with OpenSSH
 instead of WinRM. WinRM will still be configured on the box for Vagrant.
 
+## Templates
+
+All the input templates are all standard Golang text/templates. By default
+inductor will attempt to use the following template files:
+
+- Autounattend.xml.tpl
+- packer.json.tpl
+- Vagrantfile.tpl
+
+By convention inductor will attempt to load and combine any templates that
+start with the file name of the specified template. For example if you used the
+default Autounattend.xml.tpl file, inductor would load and combine any file
+that matched Autounattend.xml.tpl* in the same directory as the template.
+Inductor might find Autounattend.xml.tpl.disks and Autounattend.xml.tpl.oobe
+in the same directory as Autounattend.xml.tpl. Inductor would load and combine
+all three templates before rendering them.
+
+#### Template Variables
+- OSName
+-	ProductKey
+- WindowsImageName
+-	VirtualboxGuestOsType
+-	VmwareGuestOsType
+-	IsoURL
+-	IsoChecksumType
+-	IsoChecksum
+-	Communicator
+-	Username
+-	Password
+-	DiskSize
+-	RAM
+-	CPU
+-	Headless
+-	WindowsUpdates
+
+### Template Functions
+- Contains
+- Replace
+- ToUpper
+- ToLower
+- SafeComputerName
+
 ## OS Registry
 
 The OS registry contains predefined attributes for each OS that inductor can
