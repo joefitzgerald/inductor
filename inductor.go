@@ -123,7 +123,7 @@ func newApp() *cli.App {
 			opts.Communicator = "ssh"
 		}
 
-		// read in the packer.json.tpl
+		// create output packer.json file writer
 		packerJSONOutPath := c.String("packer")
 		packerJSON, err := os.Create(packerJSONOutPath)
 		if err != nil {
@@ -133,7 +133,7 @@ func newApp() *cli.App {
 		packerJSONWriter := bufio.NewWriter(packerJSON)
 		defer packerJSONWriter.Flush()
 
-		// read in the Autounattend.xml.tpl
+		// create output Autounattend.xml file writer
 		autounattendXML, err := os.Create(c.String("autounattend"))
 		if err != nil {
 			die(err)
@@ -142,7 +142,7 @@ func newApp() *cli.App {
 		autounattendXMLWriter := bufio.NewWriter(autounattendXML)
 		defer autounattendXMLWriter.Flush()
 
-		// read in the Vagrantfile.tpl
+		// create output Vagrantfile file writer
 		vagrantfile, err := os.Create(c.String("vagrantfile"))
 		if err != nil {
 			die(err)
