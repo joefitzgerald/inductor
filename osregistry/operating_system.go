@@ -19,6 +19,7 @@ type OperatingSystem struct {
 	VirtualboxGuestOsType string `json:"virtualbox_guest_os_type"`
 	VmwareGuestOsType     string `json:"vmware_guest_os_type"`
 	WindowsImageName      string `json:"windows_image_name"`
+	ProductKey            string `json:"product_key"`
 }
 
 // List all available OS names

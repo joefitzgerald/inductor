@@ -34,6 +34,7 @@ func NewRenderOptionsWithOverrides(os *osregistry.OperatingSystem) (*RenderOptio
 	opts.VirtualboxGuestOsType = os.VirtualboxGuestOsType
 	opts.VmwareGuestOsType = os.VmwareGuestOsType
 	opts.WindowsImageName = os.WindowsImageName
+	opts.ProductKey = os.ProductKey
 	return opts, nil
 }
 
