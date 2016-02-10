@@ -116,7 +116,9 @@ func newApp() *cli.App {
 		// apply any command line overrides to the options set
 		opts.WindowsUpdates = !c.Bool("skipwindowsupdates")
 		opts.Headless = !c.Bool("gui")
-		opts.ProductKey = c.String("productkey")
+		if len(c.String("productkey")) > 0 {
+			opts.ProductKey = c.String("productkey")
+		}
 		if c.Bool("ssh") {
 			opts.Communicator = "ssh"
 		}
