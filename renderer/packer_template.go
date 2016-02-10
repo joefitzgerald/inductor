@@ -22,50 +22,41 @@ func NewPackerTemplateWithOverrides(packerTplPath string, autounattendTplPath st
 		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", file))
 	}
 
-	packerTplFiles, err := filepath.Glob(packerTplPath + "*")
-	if len(packerTplFiles) > 0 {
-		for _, f := range packerTplFiles {
-			packerTpl, err := ioutil.ReadFile(f)
-			if err != nil {
-				tpl.PackerTpl = defaultTpl.PackerTpl
-				warnUsingDefault(packerTplPath)
-				break
-			}
-			if len(tpl.PackerTpl) > 0 {
-				tpl.PackerTpl = tpl.PackerTpl + "\n"
-			}
-			tpl.PackerTpl = tpl.PackerTpl + string(packerTpl)
-		}
-	} else {
+	tpl.PackerTpl = readTemplates(packerTplPath)
+	if tpl.PackerTpl == "" {
 		tpl.PackerTpl = defaultTpl.PackerTpl
 		warnUsingDefault(packerTplPath)
 	}
 
-	autounattendTplFiles, err := filepath.Glob(autounattendTplPath + "*")
-	if len(autounattendTplFiles) > 0 {
-		for _, f := range autounattendTplFiles {
-			autounattendTpl, err := ioutil.ReadFile(f)
-			if err != nil {
-				tpl.AutounattendTpl = defaultTpl.AutounattendTpl
-				warnUsingDefault(vagrantfileTplPath)
-				break
-			}
-			if len(tpl.AutounattendTpl) > 0 {
-				tpl.AutounattendTpl = tpl.AutounattendTpl + "\n"
-			}
-			tpl.AutounattendTpl = tpl.AutounattendTpl + string(autounattendTpl)
-		}
-	} else {
+	tpl.AutounattendTpl = readTemplates(autounattendTplPath)
+	if tpl.AutounattendTpl == "" {
 		tpl.AutounattendTpl = defaultTpl.AutounattendTpl
+		warnUsingDefault(autounattendTplPath)
+	}
+
+	tpl.VagrantfileTpl = readTemplates(vagrantfileTplPath)
+	if tpl.VagrantfileTpl == "" {
+		tpl.VagrantfileTpl = defaultTpl.VagrantfileTpl
 		warnUsingDefault(vagrantfileTplPath)
 	}
 
-	vagrantfileTpl, err := ioutil.ReadFile(vagrantfileTplPath)
-	if err == nil {
-		tpl.VagrantfileTpl = string(vagrantfileTpl)
-	} else {
-		tpl.VagrantfileTpl = defaultTpl.VagrantfileTpl
-		warnUsingDefault(vagrantfileTplPath)
+	return tpl
+}
+
+func readTemplates(tplPath string) string {
+	tpl := ""
+	tplFiles, err := filepath.Glob(tplPath + "*")
+	if err == nil && len(tplFiles) > 0 {
+		for _, f := range tplFiles {
+			newTpl, err := ioutil.ReadFile(f)
+			if err != nil {
+				return ""
+			}
+			if len(tpl) > 0 {
+				tpl = tpl + "\n"
+			}
+			tpl = tpl + string(newTpl)
+		}
 	}
 	return tpl
 }
