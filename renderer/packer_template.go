@@ -3,6 +3,7 @@ package renderer
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 )
 
 // PackerTemplate contains the packer.json and Autounattend.xml text/templates
@@ -15,26 +16,44 @@ type PackerTemplate struct {
 // NewPackerTemplateWithOverrides creates a fully functioning template using
 // any provided template file overrides if they exist.
 func NewPackerTemplateWithOverrides(packerTplPath string, autounattendTplPath string, vagrantfileTplPath string) *PackerTemplate {
-	tpl := NewPackerTemplate()
+	defaultTpl := NewPackerTemplate()
+	tpl := &PackerTemplate{}
 	warnUsingDefault := func(file string) {
 		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", file))
 	}
+
 	packerTpl, err := ioutil.ReadFile(packerTplPath)
 	if err == nil {
 		tpl.PackerTpl = string(packerTpl)
 	} else {
+		tpl.PackerTpl = defaultTpl.PackerTpl
 		warnUsingDefault(packerTplPath)
 	}
-	autounattendTpl, err := ioutil.ReadFile(autounattendTplPath)
-	if err == nil {
-		tpl.AutounattendTpl = string(autounattendTpl)
+
+	autounattendTplFiles, err := filepath.Glob(autounattendTplPath + "*")
+	if len(autounattendTplFiles) > 0 {
+		for _, f := range autounattendTplFiles {
+			autounattendTpl, err := ioutil.ReadFile(f)
+			if err != nil {
+				tpl.AutounattendTpl = defaultTpl.AutounattendTpl
+				warnUsingDefault(vagrantfileTplPath)
+				break
+			}
+			if len(tpl.AutounattendTpl) > 0 {
+				tpl.AutounattendTpl = tpl.AutounattendTpl + "\n"
+			}
+			tpl.AutounattendTpl = tpl.AutounattendTpl + string(autounattendTpl)
+		}
 	} else {
-		warnUsingDefault(autounattendTplPath)
+		tpl.AutounattendTpl = defaultTpl.AutounattendTpl
+		warnUsingDefault(vagrantfileTplPath)
 	}
+
 	vagrantfileTpl, err := ioutil.ReadFile(vagrantfileTplPath)
 	if err == nil {
 		tpl.VagrantfileTpl = string(vagrantfileTpl)
 	} else {
+		tpl.VagrantfileTpl = defaultTpl.VagrantfileTpl
 		warnUsingDefault(vagrantfileTplPath)
 	}
 	return tpl
