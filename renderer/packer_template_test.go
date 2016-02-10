@@ -60,6 +60,33 @@ func TestCanLoadAutounattendMultiTemplates(t *testing.T) {
 	}
 }
 
+func TestCanLoadPackerJSONMultiTemplates(t *testing.T) {
+	// create temporary directory to store all our testNewPackerTemplate() files
+	tmpDir, err := ioutil.TempDir("", "inductor")
+	if err != nil {
+		t.Error("Couldn't create test temp dir: ", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// stub out the vagrant, packer, and autounattend files
+	vagrantTplPath := createTemplateFile(tmpDir, "Vagrantfile.tpl")
+	autounattendTplPath := createTemplateFile(tmpDir, "Autounattend.xml.tpl")
+	packerTplPath := createTemplateFile(tmpDir, "packer.json.tpl")
+	createTemplateFile(tmpDir, "packer.json.tpl.vbox")
+	createTemplateFile(tmpDir, "packer.json.tpl.vmware")
+
+	template := NewPackerTemplateWithOverrides(packerTplPath, autounattendTplPath, vagrantTplPath)
+	if !strings.Contains(template.PackerTpl, "packer.json.tpl") {
+		t.Errorf("The main packer.json.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	}
+	if !strings.Contains(template.PackerTpl, "packer.json.tpl.vbox") {
+		t.Errorf("The packer.json.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	}
+	if !strings.Contains(template.PackerTpl, "packer.json.tpl.vmware") {
+		t.Errorf("The packer.json.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	}
+}
+
 func createTemplateFile(tmpDir string, filename string) string {
 	tplPath := path.Join(tmpDir, filename)
 	ioutil.WriteFile(tplPath, []byte(filename), 0644)

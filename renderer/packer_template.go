@@ -22,9 +22,20 @@ func NewPackerTemplateWithOverrides(packerTplPath string, autounattendTplPath st
 		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", file))
 	}
 
-	packerTpl, err := ioutil.ReadFile(packerTplPath)
-	if err == nil {
-		tpl.PackerTpl = string(packerTpl)
+	packerTplFiles, err := filepath.Glob(packerTplPath + "*")
+	if len(packerTplFiles) > 0 {
+		for _, f := range packerTplFiles {
+			packerTpl, err := ioutil.ReadFile(f)
+			if err != nil {
+				tpl.PackerTpl = defaultTpl.PackerTpl
+				warnUsingDefault(packerTplPath)
+				break
+			}
+			if len(tpl.PackerTpl) > 0 {
+				tpl.PackerTpl = tpl.PackerTpl + "\n"
+			}
+			tpl.PackerTpl = tpl.PackerTpl + string(packerTpl)
+		}
 	} else {
 		tpl.PackerTpl = defaultTpl.PackerTpl
 		warnUsingDefault(packerTplPath)
