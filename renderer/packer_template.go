@@ -1,10 +1,6 @@
 package renderer
 
-import (
-	"fmt"
-	"io/ioutil"
-	"path/filepath"
-)
+import "io/ioutil"
 
 // PackerTemplate contains the packer.json and Autounattend.xml text/templates
 type PackerTemplate struct {
@@ -15,50 +11,40 @@ type PackerTemplate struct {
 
 // NewPackerTemplateWithOverrides creates a fully functioning template using
 // any provided template file overrides if they exist.
-func NewPackerTemplateWithOverrides(packerTplPath string, autounattendTplPath string, vagrantfileTplPath string) *PackerTemplate {
-	defaultTpl := NewPackerTemplate()
+func NewPackerTemplateWithOverrides(baseDir string, osName string) (*PackerTemplate, error) {
 	tpl := &PackerTemplate{}
-	warnUsingDefault := func(file string) {
-		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", file))
-	}
+	var err error
 
-	tpl.PackerTpl = readTemplates(packerTplPath)
-	if tpl.PackerTpl == "" {
-		tpl.PackerTpl = defaultTpl.PackerTpl
-		warnUsingDefault(packerTplPath)
-	}
-
-	tpl.AutounattendTpl = readTemplates(autounattendTplPath)
-	if tpl.AutounattendTpl == "" {
-		tpl.AutounattendTpl = defaultTpl.AutounattendTpl
-		warnUsingDefault(autounattendTplPath)
-	}
-
-	tpl.VagrantfileTpl = readTemplates(vagrantfileTplPath)
-	if tpl.VagrantfileTpl == "" {
-		tpl.VagrantfileTpl = defaultTpl.VagrantfileTpl
-		warnUsingDefault(vagrantfileTplPath)
-	}
-
-	return tpl
-}
-
-func readTemplates(tplPath string) string {
-	tpl := ""
-	tplFiles, err := filepath.Glob(tplPath + "*")
-	if err == nil && len(tplFiles) > 0 {
-		for _, f := range tplFiles {
-			newTpl, err := ioutil.ReadFile(f)
-			if err != nil {
-				return ""
-			}
-			if len(tpl) > 0 {
-				tpl = tpl + "\n"
-			}
-			tpl = tpl + string(newTpl)
+	tpl.PackerTpl, err = readTemplates(baseDir, "packer", osName)
+	if err == nil {
+		tpl.AutounattendTpl, err = readTemplates(baseDir, "Autounattend", osName)
+		if err == nil {
+			tpl.VagrantfileTpl, err = readTemplates(baseDir, "Vagrantfile", osName)
 		}
 	}
-	return tpl
+
+	return tpl, err
+}
+
+func readTemplates(baseDir string, baseFilename string, osName string) (string, error) {
+	tplFiles, err := ListFiles(baseDir, baseFilename)
+	if err != nil {
+		return "", err
+	}
+
+	tplFiles = FilterFilesToRender(tplFiles, osName)
+	tpl := ""
+	for _, f := range tplFiles {
+		newTpl, err := ioutil.ReadFile(f)
+		if err != nil {
+			return "", err
+		}
+		if len(tpl) > 0 {
+			tpl = tpl + "\n"
+		}
+		tpl = tpl + string(newTpl)
+	}
+	return tpl, nil
 }
 
 // NewPackerTemplate creates a new fully functioning PackerTemplate with

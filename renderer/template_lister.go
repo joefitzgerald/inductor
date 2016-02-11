@@ -1,8 +1,8 @@
 package renderer
 
 import (
-	"fmt"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -10,17 +10,30 @@ import (
 // according to inductor rules for template precedence.
 func FilterFilesToRender(files []string, osName string) []string {
 	fileMap := make(map[string]string)
-	for _, f := range files {
-		// get the filename without the OS name (if any)
-		filename := filepath.Base(f)
+	for _, file := range files {
+		// get the filename without the directory
+		filename := filepath.Base(file)
+
+		// if this file is OS specific, parse out that OS name
+		re := regexp.MustCompile("^\\w+-(\\w+)\\.")
+		matches := re.FindStringSubmatch(filename)
+		if matches != nil && len(matches) > 1 {
+			fileOsName := matches[1]
+
+			// skip any files which have an OS in their name that isn't ours
+			if !strings.EqualFold(fileOsName, osName) {
+				continue
+			}
+		}
+
+		// file key shouldn't contain the OS
 		key := strings.Replace(filename, "-"+osName, "", 1)
-		fmt.Println(key)
 
 		// add an entry, but ensure we keep the OS specific entries
 		// if it produced the same key but is a longer path, it must be OS specific
 		curFile, _ := fileMap[key]
-		if len(f) > len(curFile) {
-			curFile = f
+		if len(file) > len(curFile) {
+			curFile = file
 		}
 		fileMap[key] = curFile
 	}

@@ -15,7 +15,6 @@ func TestFilterFilesToRenderWithoutCollision(t *testing.T) {
 		"/Users/sneal/packer-windows/Autounattend.specialize.tpl",
 	}
 	filteredFiles := FilterFilesToRender(files, "windows2012r2")
-	t.Log(filteredFiles)
 	for _, expectedFile := range files {
 		if !contains(filteredFiles, expectedFile) {
 			t.Errorf("Expected the slice to contain: %s", expectedFile)
@@ -36,7 +35,32 @@ func TestFilterFilesToRenderWithCollision(t *testing.T) {
 		"/Users/sneal/packer-windows/Autounattend.offlineServicing.tpl",
 	}
 	filteredFiles := FilterFilesToRender(files, "windows2012r2")
+	for _, expectedFile := range expected {
+		if !contains(filteredFiles, expectedFile) {
+			t.Errorf("Expected the slice to contain: %s", expectedFile)
+		}
+	}
+}
+
+func TestFilterFilesToRenderWithMultipleOS(t *testing.T) {
+	var files = []string{
+		"/Users/sneal/packer-windows/Autounattend-windows2012r2.tpl",
+		"/Users/sneal/packer-windows/Autounattend-windows2012.tpl",
+		"/Users/sneal/packer-windows/Autounattend-windows2012r2.windowsPE.tpl",
+		"/Users/sneal/packer-windows/Autounattend-windows2012.windowsPE.tpl",
+		"/Users/sneal/packer-windows/Autounattend.windowsPE.tpl",
+		"/Users/sneal/packer-windows/Autounattend.offlineServicing.tpl",
+	}
+	var expected = []string{
+		"/Users/sneal/packer-windows/Autounattend-windows2012r2.tpl",
+		"/Users/sneal/packer-windows/Autounattend-windows2012r2.windowsPE.tpl",
+		"/Users/sneal/packer-windows/Autounattend.offlineServicing.tpl",
+	}
+	filteredFiles := FilterFilesToRender(files, "windows2012r2")
 	t.Log(filteredFiles)
+	if len(filteredFiles) != len(expected) {
+		t.Errorf("Expected %d files to be returned, but got %d", len(expected), len(filteredFiles))
+	}
 	for _, expectedFile := range expected {
 		if !contains(filteredFiles, expectedFile) {
 			t.Errorf("Expected the slice to contain: %s", expectedFile)

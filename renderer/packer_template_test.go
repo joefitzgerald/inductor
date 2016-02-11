@@ -17,16 +17,19 @@ func TestCanLoadTemplates(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// stub out the vagrant, packer, and autounattend files
-	packerTplPath := createTemplateFile(tmpDir, "packer.json.tpl")
-	autounattendTplPath := createTemplateFile(tmpDir, "Autounattend.xml.tpl")
-	vagrantTplPath := createTemplateFile(tmpDir, "Vagrantfile.tpl")
+	createTemplateFile(tmpDir, "packer.tpl")
+	createTemplateFile(tmpDir, "Autounattend.tpl")
+	createTemplateFile(tmpDir, "Vagrantfile.tpl")
 
-	template := NewPackerTemplateWithOverrides(packerTplPath, autounattendTplPath, vagrantTplPath)
-	if template.PackerTpl != "packer.json.tpl" {
-		t.Errorf("The packer.json.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	template, err := NewPackerTemplateWithOverrides(tmpDir, "windows2012r2")
+	if err != nil {
+		t.Error("Error loading Packer templates with overrides", err)
 	}
-	if template.AutounattendTpl != "Autounattend.xml.tpl" {
-		t.Errorf("The Autounattend.xml.tpl wasn't properly read in, got: %s", template.AutounattendTpl)
+	if template.PackerTpl != "packer.tpl" {
+		t.Errorf("The packer.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	}
+	if template.AutounattendTpl != "Autounattend.tpl" {
+		t.Errorf("The Autounattend.tpl wasn't properly read in, got: %s", template.AutounattendTpl)
 	}
 	if template.VagrantfileTpl != "Vagrantfile.tpl" {
 		t.Errorf("The Vagrantfile.tpl wasn't properly read in, got: %s", template.VagrantfileTpl)
@@ -42,21 +45,24 @@ func TestCanLoadAutounattendMultiTemplates(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// stub out the vagrant, packer, and autounattend files
-	packerTplPath := createTemplateFile(tmpDir, "packer.json.tpl")
-	vagrantTplPath := createTemplateFile(tmpDir, "Vagrantfile.tpl")
-	autounattendTplPath := createTemplateFile(tmpDir, "Autounattend.xml.tpl")
-	createTemplateFile(tmpDir, "Autounattend.xml.tpl.disks")
-	createTemplateFile(tmpDir, "Autounattend.xml.tpl.oobe")
+	createTemplateFile(tmpDir, "packer.tpl")
+	createTemplateFile(tmpDir, "Vagrantfile.tpl")
+	createTemplateFile(tmpDir, "Autounattend.tpl")
+	createTemplateFile(tmpDir, "Autounattend-windows2012r2.windowsPE.tpl")
+	createTemplateFile(tmpDir, "Autounattend-windows2012r2.oobe.tpl")
 
-	template := NewPackerTemplateWithOverrides(packerTplPath, autounattendTplPath, vagrantTplPath)
-	if !strings.Contains(template.AutounattendTpl, "Autounattend.xml.tpl") {
+	template, err := NewPackerTemplateWithOverrides(tmpDir, "windows2012r2")
+	if err != nil {
+		t.Error("Error loading Packer templates with overrides", err)
+	}
+	if !strings.Contains(template.AutounattendTpl, "Autounattend.tpl") {
 		t.Errorf("The main Autounattend.xml.tpl wasn't properly read in, got: %s", template.AutounattendTpl)
 	}
-	if !strings.Contains(template.AutounattendTpl, "Autounattend.xml.tpl.disks") {
-		t.Errorf("The Autounattend.xml.tpl.disks wasn't properly read in, got: %s", template.AutounattendTpl)
+	if !strings.Contains(template.AutounattendTpl, "Autounattend-windows2012r2.windowsPE.tpl") {
+		t.Errorf("The Autounattend-windows2012r2.windowsPE.tpl wasn't properly read in, got: %s", template.AutounattendTpl)
 	}
-	if !strings.Contains(template.AutounattendTpl, "Autounattend.xml.tpl.oobe") {
-		t.Errorf("The Autounattend.xml.tpl.oobe wasn't properly read in, got: %s", template.AutounattendTpl)
+	if !strings.Contains(template.AutounattendTpl, "Autounattend-windows2012r2.oobe.tpl") {
+		t.Errorf("The Autounattend-windows2012r2.oobe.tpl wasn't properly read in, got: %s", template.AutounattendTpl)
 	}
 }
 
@@ -69,21 +75,24 @@ func TestCanLoadPackerJSONMultiTemplates(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// stub out the vagrant, packer, and autounattend files
-	vagrantTplPath := createTemplateFile(tmpDir, "Vagrantfile.tpl")
-	autounattendTplPath := createTemplateFile(tmpDir, "Autounattend.xml.tpl")
-	packerTplPath := createTemplateFile(tmpDir, "packer.json.tpl")
-	createTemplateFile(tmpDir, "packer.json.tpl.vbox")
-	createTemplateFile(tmpDir, "packer.json.tpl.vmware")
+	createTemplateFile(tmpDir, "Vagrantfile.tpl")
+	createTemplateFile(tmpDir, "Autounattend.tpl")
+	createTemplateFile(tmpDir, "packer.tpl")
+	createTemplateFile(tmpDir, "packer.vbox.tpl")
+	createTemplateFile(tmpDir, "packer.vmware.tpl")
 
-	template := NewPackerTemplateWithOverrides(packerTplPath, autounattendTplPath, vagrantTplPath)
-	if !strings.Contains(template.PackerTpl, "packer.json.tpl") {
-		t.Errorf("The main packer.json.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	template, err := NewPackerTemplateWithOverrides(tmpDir, "windows2012r2")
+	if err != nil {
+		t.Error("Error loading Packer templates with overrides", err)
 	}
-	if !strings.Contains(template.PackerTpl, "packer.json.tpl.vbox") {
-		t.Errorf("The packer.json.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	if !strings.Contains(template.PackerTpl, "packer.tpl") {
+		t.Errorf("The main packer.tpl wasn't properly read in, got: %s", template.PackerTpl)
 	}
-	if !strings.Contains(template.PackerTpl, "packer.json.tpl.vmware") {
-		t.Errorf("The packer.json.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	if !strings.Contains(template.PackerTpl, "packer.vbox.tpl") {
+		t.Errorf("The packer.vbox.tpl wasn't properly read in, got: %s", template.PackerTpl)
+	}
+	if !strings.Contains(template.PackerTpl, "packer.vmware.tpl") {
+		t.Errorf("The packer.vmware.tpl wasn't properly read in, got: %s", template.PackerTpl)
 	}
 }
 
