@@ -3,6 +3,7 @@ package renderer
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -77,18 +78,19 @@ func TestCanListFiles(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// stub out the autounattend files
-	expected := make([]string, 0, 4)
-	expected = append(expected, createTemplateFile(tmpDir, "Autounattend.tpl"))
-	expected = append(expected, createTemplateFile(tmpDir, "Autounattend.windowsPE.tpl"))
-	expected = append(expected, createTemplateFile(tmpDir, "Autounattend-windows2012r2.windowsPE.tpl"))
-	createTemplateFile(tmpDir, "packer-windows2012r2.windowsPE.tpl")
-
-	files, err := ListFiles(tmpDir, "Autounattend")
-	if err != nil {
-		t.Error("Couldn't list glob files:", err)
+	var expected = []string{
+		createTemplateFile(tmpDir, "packer.tpl"),
+		createTemplateFile(tmpDir, "packer.windowsPE.tpl"),
+		createTemplateFile(tmpDir, "packer-windows2012r2.windowsPE.tpl"),
 	}
-	if len(files) != 3 {
-		t.Errorf("Expected 3 files to be returned, but got %d", len(files))
+
+	// create a file and dir that shouldn't be picked up
+	createTemplateFile(tmpDir, "Autounattend-windows2012r2.windowsPE.tpl")
+	os.Mkdir(filepath.Join(tmpDir, "packer_cache"), 0644)
+
+	files := ListFiles(tmpDir, "packer")
+	if len(files) != len(expected) {
+		t.Errorf("Expected %d files to be returned, but got %d", len(expected), len(files))
 	}
 	for _, f := range expected {
 		if !contains(files, f) {

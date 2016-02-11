@@ -27,12 +27,7 @@ func NewPackerTemplateWithOverrides(baseDir string, osName string) (*PackerTempl
 }
 
 func readTemplates(baseDir string, baseFilename string, osName string) (string, error) {
-	tplFiles, err := ListFiles(baseDir, baseFilename)
-	if err != nil {
-		return "", err
-	}
-
-	tplFiles = FilterFilesToRender(tplFiles, osName)
+	tplFiles := FilterFilesToRender(ListFiles(baseDir, baseFilename), osName)
 	tpl := ""
 	for _, f := range tplFiles {
 		newTpl, err := ioutil.ReadFile(f)

@@ -1,6 +1,7 @@
 package renderer
 
 import (
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -48,6 +49,21 @@ func FilterFilesToRender(files []string, osName string) []string {
 
 // ListFiles returns all files in the current working directory that start with
 // the specific base file name.
-func ListFiles(baseDir string, filenameBase string) ([]string, error) {
-	return filepath.Glob(filepath.Join(baseDir, filenameBase) + "*")
+func ListFiles(baseDir string, filenameBase string) []string {
+	var files []string
+	entries, _ := filepath.Glob(filepath.Join(baseDir, filenameBase) + "*")
+	for _, e := range entries {
+		if isFile(e) {
+			files = append(files, e)
+		}
+	}
+	return files
+}
+
+func isFile(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !fileInfo.IsDir()
 }
