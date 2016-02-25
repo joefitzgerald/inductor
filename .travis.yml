@@ -11,7 +11,7 @@ go:
 script:
   - go get -u github.com/alecthomas/gometalinter
   - gometalinter -i -u -f
-  - gometalinter --exclude="(_test.go)" ./...
+  - gometalinter --exclude="(_test.go)" --deadline=1m ./...
 
 matrix:
   allow_failures:
