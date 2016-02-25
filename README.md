@@ -54,8 +54,15 @@ like to use, for example:
 inductor windows10
 ```
 
-In the current directory you will now have an Autounattend.xml, packer.json, and
-Vagrantfile ready for Packer `packer build packer.json`.
+This will generate an Autounattend.xml, packer.json, and Vagrantfile in the
+current directory. To chain the inductor output into Packer do this:
+
+```
+packer build $(inductor windows10)
+```
+
+This will execute inductor creating all the required artifacts for Packer and
+then execute Packer using the generated templates.
 
 ## Inductor Options
 

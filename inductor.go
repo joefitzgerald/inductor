@@ -124,7 +124,8 @@ func newApp() *cli.App {
 		}
 
 		// read in the packer.json.tpl
-		packerJSON, err := os.Create(c.String("packer"))
+		packerJSONOutPath := c.String("packer")
+		packerJSON, err := os.Create(packerJSONOutPath)
 		if err != nil {
 			die(err)
 		}
@@ -159,6 +160,9 @@ func newApp() *cli.App {
 		if err != nil {
 			die(err)
 		}
+
+		// this allows us to do command substitution with Packer
+		fmt.Print(packerJSONOutPath)
 	}
 	return app
 }
