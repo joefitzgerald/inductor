@@ -15,7 +15,10 @@ var Version = "0.0.0"
 
 func main() {
 	app := newApp()
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		die(err)
+	}
 }
 
 func newApp() *cli.App {
