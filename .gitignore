@@ -23,3 +23,16 @@ _testmain.go
 
 *.exe
 cmd/inductor/inductor
+cmd/inductor_openbsd_amd64
+cmd/inductor_openbsd_386
+cmd/inductor_netbsd_arm
+cmd/inductor_netbsd_amd64
+cmd/inductor_netbsd_386
+cmd/inductor_linux_arm
+cmd/inductor_linux_amd64
+cmd/inductor_linux_386
+cmd/inductor_freebsd_arm
+cmd/inductor_freebsd_amd64
+cmd/inductor_freebsd_386
+cmd/inductor_darwin_amd64
+cmd/inductor_darwin_386
