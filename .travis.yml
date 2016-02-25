@@ -1,5 +1,9 @@
 language: go
 
+branches:
+  only:
+    - master
+
 go:
   - 1.6
   - tip
@@ -11,4 +15,4 @@ script:
 
 matrix:
   allow_failures:
-      - go: tip
+    - go: tip
