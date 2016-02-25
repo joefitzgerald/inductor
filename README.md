@@ -79,18 +79,83 @@ out the generated Autounattend.xml.
 generated packer.json.
 - `--vagrantfile <Vagantfile>` The file path where inductor will write out the
 generated vagrantfile.
-- `--autounattendtpl <Autounattend.xml.tpl>` The file path to the input
-Autounattend text/template used to generate the Autounattend.xml.
-- `--packertpl <packer.json.tpl>` The file path to the input packer.json
-text/template used to generate packer.json.
-- `--vagrantfiletpl <Vagrantfile.tpl>` The file path to the input Vagrantfile
-text/tepmlate used to generate the box Vagrantfile.
 - `--productkey <key>` The Windows product key to be inserted into the
 Autounattend.xml
 - `--skipwindowsupdates` When specified the Windows Update step will be skipped.
 - `--gui` When specified Packer will run the VM in GUI mode (headless=false).
 - `--ssh` When specified Packer will use the SSH communicator with OpenSSH
 instead of WinRM. WinRM will still be configured on the box for Vagrant.
+
+## Templates
+
+All input templates are standard Golang text/templates. By default inductor will
+attempt to use the following template files in the current working directory:
+
+- Autounattend.tpl
+- packer.tpl
+- Vagrantfile.tpl
+
+Inductor supports templates spread across multiple files as well as OS specific
+templates. There is a one/many to one relationship from an input template to an
+output inductor generated file. Inductor also allows you to specialize or
+override generic input templates by OS. This works for all 3 input templates.
+
+### Template Loading Convention
+
+(Autounattend|packer|Vagrantfile).tpl
+Example: Autounattend.tpl
+
+(Autounattend|packer|Vagrantfile)-OS.tpl
+Example: Autounattend-windows10.tpl
+
+(Autounattend|packer|Vagrantfile).subsection.tpl
+Example: Autounattend.oobe.tpl
+
+(Autounattend|packer|Vagrantfile)-OS.subsection.tpl
+Example: Autounattend-windows10.oobe.tpl
+
+Anything with an operating system in the template name that matches the
+current system you're building will take precedence over the same named template
+without an OS in the file name. Any template with an OS in the name that
+doesn't match the current system you're building is ignored.
+
+Given the following files in the current directory, the bold files will be
+automatically loaded and merged together to be rendered to produce the final
+Autounattend.xml file for Windows2012r2:
+
+- Autounattend.tpl
+- packer.tpl
+- __Autounattend-windows2012r2.tpl__
+- Autounattend-windows2008.tpl
+- __Autounattend-windows2012r2.windowsPE.tpl__
+- Autounattend-windows2008.windowsPE.tpl
+- Autounattend.windowsPE.tpl
+- __Autounattend.offlineServicing.tpl__
+
+### Template Variables
+- OSName
+-	ProductKey
+- WindowsImageName
+-	VirtualboxGuestOsType
+-	VmwareGuestOsType
+-	IsoURL
+-	IsoChecksumType
+-	IsoChecksum
+-	Communicator
+-	Username
+-	Password
+-	DiskSize
+-	RAM
+-	CPU
+-	Headless
+-	WindowsUpdates
+
+### Template Functions
+- Contains
+- Replace
+- ToUpper
+- ToLower
+- SafeComputerName
 
 ## OS Registry
 
@@ -106,16 +171,19 @@ so here it is:
 
 ```json
 {
-  "windowsXX": {
+  "windows10": {
     "iso_url": "./iso/CLIENTENTERPRISEEVAL_OEMRET_X64FRE_EN-US.ISO",
     "iso_checksum_type": "sha1",
     "iso_checksum": "56ab095075be28a90bc0b510835280975c6bb2ce",
     "windows_image_name": "Windows 10 Enterprise",
     "virtualbox_guest_os_type": "Windows81_64",
-    "vmware_guest_os_type": "windows8srv-64"
+    "vmware_guest_os_type": "windows8srv-64",
+    "product_key": "FEED-ME2D"
   }
 }
 ```
+
+Except for product_key all other fields are required.
 
 By default inductor looks in the current working directory for a file named
 osregistry.json. If you name it something else or is in another directory

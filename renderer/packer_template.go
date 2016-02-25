@@ -1,9 +1,6 @@
 package renderer
 
-import (
-	"fmt"
-	"io/ioutil"
-)
+import "io/ioutil"
 
 // PackerTemplate contains the packer.json and Autounattend.xml text/templates
 type PackerTemplate struct {
@@ -14,30 +11,35 @@ type PackerTemplate struct {
 
 // NewPackerTemplateWithOverrides creates a fully functioning template using
 // any provided template file overrides if they exist.
-func NewPackerTemplateWithOverrides(packerTplPath string, autounattendTplPath string, vagrantfileTplPath string) *PackerTemplate {
-	tpl := NewPackerTemplate()
-	warnUsingDefault := func(file string) {
-		fmt.Println(fmt.Sprintf("WARN: Couldn't open '%s', defaulting to internal inductor template", file))
-	}
-	packerTpl, err := ioutil.ReadFile(packerTplPath)
+func NewPackerTemplateWithOverrides(baseDir string, osName string) (*PackerTemplate, error) {
+	tpl := &PackerTemplate{}
+	var err error
+
+	tpl.PackerTpl, err = readTemplates(baseDir, "packer", osName)
 	if err == nil {
-		tpl.PackerTpl = string(packerTpl)
-	} else {
-		warnUsingDefault(packerTplPath)
+		tpl.AutounattendTpl, err = readTemplates(baseDir, "Autounattend", osName)
+		if err == nil {
+			tpl.VagrantfileTpl, err = readTemplates(baseDir, "Vagrantfile", osName)
+		}
 	}
-	autounattendTpl, err := ioutil.ReadFile(autounattendTplPath)
-	if err == nil {
-		tpl.AutounattendTpl = string(autounattendTpl)
-	} else {
-		warnUsingDefault(autounattendTplPath)
+
+	return tpl, err
+}
+
+func readTemplates(baseDir string, baseFilename string, osName string) (string, error) {
+	tplFiles := FilterFilesToRender(ListFiles(baseDir, baseFilename), osName)
+	tpl := ""
+	for _, f := range tplFiles {
+		newTpl, err := ioutil.ReadFile(f)
+		if err != nil {
+			return "", err
+		}
+		if len(tpl) > 0 {
+			tpl = tpl + "\n"
+		}
+		tpl = tpl + string(newTpl)
 	}
-	vagrantfileTpl, err := ioutil.ReadFile(vagrantfileTplPath)
-	if err == nil {
-		tpl.VagrantfileTpl = string(vagrantfileTpl)
-	} else {
-		warnUsingDefault(vagrantfileTplPath)
-	}
-	return tpl
+	return tpl, nil
 }
 
 // NewPackerTemplate creates a new fully functioning PackerTemplate with

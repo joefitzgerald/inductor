@@ -45,21 +45,6 @@ func newApp() *cli.App {
 			Usage: "The output Vagrantfile file path",
 		},
 		cli.StringFlag{
-			Name:  "autounattendtpl, atpl",
-			Value: "Autounattend.xml.tpl",
-			Usage: "The input Autounattend.xml template file path",
-		},
-		cli.StringFlag{
-			Name:  "packertpl, ptpl",
-			Value: "packer.json.tpl",
-			Usage: "The input packer.json template file path",
-		},
-		cli.StringFlag{
-			Name:  "vagrantfiletpl, vtpl",
-			Value: "Vagrantfile.tpl",
-			Usage: "The input Vagrantfile template file path",
-		},
-		cli.StringFlag{
 			Name:  "productkey, pk",
 			Usage: "The MS Windows product key if you have one",
 		},
@@ -123,7 +108,7 @@ func newApp() *cli.App {
 			opts.Communicator = "ssh"
 		}
 
-		// read in the packer.json.tpl
+		// create output packer.json file writer
 		packerJSONOutPath := c.String("packer")
 		packerJSON, err := os.Create(packerJSONOutPath)
 		if err != nil {
@@ -133,7 +118,7 @@ func newApp() *cli.App {
 		packerJSONWriter := bufio.NewWriter(packerJSON)
 		defer packerJSONWriter.Flush()
 
-		// read in the Autounattend.xml.tpl
+		// create output Autounattend.xml file writer
 		autounattendXML, err := os.Create(c.String("autounattend"))
 		if err != nil {
 			die(err)
@@ -142,7 +127,7 @@ func newApp() *cli.App {
 		autounattendXMLWriter := bufio.NewWriter(autounattendXML)
 		defer autounattendXMLWriter.Flush()
 
-		// read in the Vagrantfile.tpl
+		// create output Vagrantfile file writer
 		vagrantfile, err := os.Create(c.String("vagrantfile"))
 		if err != nil {
 			die(err)
@@ -152,10 +137,14 @@ func newApp() *cli.App {
 		defer vagrantfileWriter.Flush()
 
 		// finally render the packer.json and Autounattend.xml
-		packerTplPath := c.String("packertpl")
-		autounattendTplPath := c.String("autounattendtpl")
-		vagrantfileTplPath := c.String("vagrantfiletpl")
-		tpl := renderer.NewPackerTemplateWithOverrides(packerTplPath, autounattendTplPath, vagrantfileTplPath)
+		cwd, err := os.Getwd()
+		if err != nil {
+			die(err)
+		}
+		tpl, err := renderer.NewPackerTemplateWithOverrides(cwd, opts.OSName)
+		if err != nil {
+			die(err)
+		}
 		err = tpl.Render(opts, packerJSONWriter, autounattendXMLWriter, vagrantfileWriter)
 		if err != nil {
 			die(err)

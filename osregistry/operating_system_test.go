@@ -1,6 +1,7 @@
 package osregistry
 
 import (
+	"sort"
 	"strings"
 	"testing"
 )
@@ -29,6 +30,7 @@ var testData = `
 func TestCanListAllOSs(t *testing.T) {
 	registry := createRegistry(t)
 	os := registry.List()
+	sort.Strings(os)
 	if len(os) != 2 {
 		t.Errorf("Expected 2 OS entries, but got %d instead", len(os))
 	} else {
