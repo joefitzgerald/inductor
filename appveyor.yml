@@ -27,8 +27,7 @@ install:
 
 build_script:
   - go build ./...
-
-test:
   - go test ./...
 
+test: off
 deploy: off
