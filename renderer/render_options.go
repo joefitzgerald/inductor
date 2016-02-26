@@ -1,10 +1,15 @@
 package renderer
 
-import "github.com/joefitzgerald/inductor/osregistry"
+import (
+	"fmt"
+
+	"github.com/joefitzgerald/inductor/configuration"
+)
 
 // RenderOptions for packer.json and Autounattend.xml
 type RenderOptions struct {
 	OSName                string
+	Edition               string
 	ProductKey            string
 	WindowsImageName      string
 	VirtualboxGuestOsType string
@@ -22,25 +27,49 @@ type RenderOptions struct {
 	WindowsUpdates        bool
 }
 
-// NewRenderOptionsWithOverrides creates render options using the base OS
+// NewRenderOptions creates render options using the base OS
 // registry with any provided overrides.
-func NewRenderOptionsWithOverrides(os *osregistry.OperatingSystem) (*RenderOptions, error) {
+func NewRenderOptions(osname string, edition string, config *configuration.InductorConfiguration) (*RenderOptions, error) {
+	os, ok := config.Get(osname)
+	if !ok {
+		return nil, fmt.Errorf("Couldn't find OS configuration for '%s'", osname)
+	}
+
+	// set global config
+	opts := NewDefaultRenderOptions()
+	opts.Communicator = config.Communicator
+	opts.Headless = config.Headless
+	opts.WindowsUpdates = config.WindowsUpdates
+	// TODO: Username, Password, DiskSize, RAM, CPU
+
 	// default all rendering options to values in the OS registry
-	opts := NewRenderOptions()
 	opts.OSName = os.Name
 	opts.IsoChecksum = os.IsoChecksum
 	opts.IsoChecksumType = os.IsoChecksumType
 	opts.IsoURL = os.IsoURL
 	opts.VirtualboxGuestOsType = os.VirtualboxGuestOsType
 	opts.VmwareGuestOsType = os.VmwareGuestOsType
-	opts.WindowsImageName = os.WindowsImageName
-	opts.ProductKey = os.ProductKey
+	// TODO: Username, Password, DiskSize, RAM, CPU per OS
+
+	// edition specific attributes
+	if len(edition) == 0 {
+		for k := range os.Editions {
+			edition = k
+			break
+		}
+	}
+
+	// TODO: validate that the edition is valid
+	opts.Edition = edition
+	opts.WindowsImageName = os.Editions[edition].WindowsImageName
+	opts.ProductKey = os.Editions[edition].ProductKey
+
 	return opts, nil
 }
 
-// NewRenderOptions creates a new ready to use RenderOptions instance which
+// NewDefaultRenderOptions creates a new ready to use RenderOptions instance which
 // defaults to Windows10 trial values
-func NewRenderOptions() *RenderOptions {
+func NewDefaultRenderOptions() *RenderOptions {
 	ro := &RenderOptions{
 		OSName:                "windows10",
 		ProductKey:            "",

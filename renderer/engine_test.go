@@ -10,7 +10,7 @@ import (
 
 func TestCanBuildDefaultWindows10Config(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	tpl := NewPackerTemplate()
 	err := tpl.Render(opts, &packer, &autounattend, &vagrantfile)
 	if err != nil {
@@ -30,7 +30,7 @@ func TestCanBuildDefaultWindows10Config(t *testing.T) {
 
 func TestAutounattendValuesArePopulated(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	opts.ProductKey = "FOOBAR-7Y6KF-2VJC9-XBBR8-HVTHH"
 	tpl := NewPackerTemplate()
 	err := tpl.Render(opts, &packer, &autounattend, &vagrantfile)
@@ -55,7 +55,7 @@ func TestAutounattendValuesArePopulated(t *testing.T) {
 
 func TestPackerJSONValuesArePopulated(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	tpl := NewPackerTemplate()
 	err := tpl.Render(opts, &packer, &autounattend, &vagrantfile)
 	if err != nil {
@@ -85,7 +85,7 @@ func TestPackerJSONValuesArePopulated(t *testing.T) {
 
 func TestPackerJSONValuesArePopulatedWhenUsingSSH(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	opts.Communicator = "ssh"
 	tpl := NewPackerTemplate()
 	err := tpl.Render(opts, &packer, &autounattend, &vagrantfile)
@@ -108,7 +108,7 @@ func TestPackerJSONValuesArePopulatedWhenUsingSSH(t *testing.T) {
 
 func TestCanSkipWindowsUpdates(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	opts.WindowsUpdates = false
 	tpl := NewPackerTemplate()
 	err := tpl.Render(opts, &packer, &autounattend, &vagrantfile)
@@ -132,7 +132,7 @@ func TestCanSkipWindowsUpdates(t *testing.T) {
 
 func TestCanSkipWindowsUpdatesWhenUsingSSH(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	opts.WindowsUpdates = false
 	opts.Communicator = "ssh"
 	tpl := NewPackerTemplate()
@@ -157,7 +157,7 @@ func TestCanSkipWindowsUpdatesWhenUsingSSH(t *testing.T) {
 
 func TestShouldInstallWindowsUpdates(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	opts.WindowsUpdates = true
 	tpl := NewPackerTemplate()
 	err := tpl.Render(opts, &packer, &autounattend, &vagrantfile)
@@ -181,7 +181,7 @@ func TestShouldInstallWindowsUpdates(t *testing.T) {
 
 func TestShouldInstallWindowsUpdatesWhenUsingSSH(t *testing.T) {
 	var packer, autounattend, vagrantfile bytes.Buffer
-	opts := NewRenderOptions()
+	opts := NewDefaultRenderOptions()
 	opts.WindowsUpdates = true
 	opts.Communicator = "ssh"
 	tpl := NewPackerTemplate()
