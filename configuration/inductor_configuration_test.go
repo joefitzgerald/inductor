@@ -9,7 +9,7 @@ import (
 var testData = `
 {
 	"config": {
-		"gui": true,
+		"headless": false,
 		"windows_updates": false,
 		"communicator": "ssh",
 		"out_dir": "/tmp/foo/bar"
@@ -48,8 +48,8 @@ var testData = `
 
 func TestCanLoadGlobalConfig(t *testing.T) {
 	configuration := createConfiguration(t)
-	if !configuration.Gui {
-		t.Error("Expected Gui to be true")
+	if configuration.Headless {
+		t.Error("Expected Gui to be false")
 	}
 	if configuration.WindowsUpdates {
 		t.Error("Expected windows updates to be false")

@@ -7,7 +7,7 @@ import (
 
 // InductorConfiguration contains all OS details
 type InductorConfiguration struct {
-	Gui              bool   `json:"gui"`
+	Headless         bool   `json:"headless"`
 	WindowsUpdates   bool   `json:"windows_updates"`
 	Communicator     string `json:"communicator"`
 	OutDir           string `json:"out_dir"`
@@ -54,7 +54,7 @@ func (reg *InductorConfiguration) Get(osName string) (*OperatingSystem, bool) {
 // New creates an initialized InductorConfiguration
 func New(configSrc io.Reader) (*InductorConfiguration, error) {
 	configuration := InductorConfiguration{
-		Gui:              false,
+		Headless:         true,
 		WindowsUpdates:   true,
 		Communicator:     "winrm",
 		OutDir:           "out",
