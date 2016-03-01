@@ -28,6 +28,16 @@ func New(baseDir string) *Templates {
 	return templates
 }
 
+// FindTemplate finds the root template by path if it exists
+func (t *Templates) FindTemplate(path string) *RootTemplate {
+	for _, pt := range t.All {
+		if pt.Path == path {
+			return &pt
+		}
+	}
+	return nil
+}
+
 // for testing
 var listRootTemplatesFn = listRootTemplates
 
