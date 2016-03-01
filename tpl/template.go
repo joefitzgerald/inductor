@@ -14,7 +14,7 @@ type Template struct {
 // RootTemplate is a root template (.tpl) and all its associated partial templates
 type RootTemplate struct {
 	Template
-	PartialTemplate []Template
+	PartialTemplates []PartialTemplate
 }
 
 // PartialTemplate is a partial template fragment (.ptpl)
@@ -22,8 +22,18 @@ type PartialTemplate struct {
 	Template
 }
 
-// PartialTemplates returns all partial templates associated with this template
-func (t *RootTemplate) PartialTemplates(osName string) []PartialTemplate {
+// FindPartialTemplate finds the root template by path if it exists
+func (t *RootTemplate) FindPartialTemplate(path string) *PartialTemplate {
+	for _, pt := range t.PartialTemplates {
+		if pt.Path == path {
+			return &pt
+		}
+	}
+	return nil
+}
+
+// FindPartialTemplates returns all partial templates associated with this template
+func (t *RootTemplate) FindPartialTemplates(osName string) []PartialTemplate {
 	partials := make(map[string]*PartialTemplate)
 
 	// get all shared partial templates

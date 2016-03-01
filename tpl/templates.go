@@ -8,13 +8,15 @@ import (
 // Templates encompasses all templates within a base dir
 type Templates struct {
 	BaseDir string
+	OSName  string
 	All     []RootTemplate
 }
 
 // New creates a new Templates instance
-func New(baseDir string) *Templates {
+func New(baseDir, osName string) *Templates {
 	templates := &Templates{
 		BaseDir: baseDir,
+		OSName:  osName,
 	}
 
 	// find all root templates
@@ -22,6 +24,8 @@ func New(baseDir string) *Templates {
 	for _, e := range entries {
 		rootTemplate := RootTemplate{}
 		rootTemplate.Path = e
+		// This is a little less than ideal
+		rootTemplate.PartialTemplates = rootTemplate.FindPartialTemplates(osName)
 		templates.All = append(templates.All, rootTemplate)
 	}
 
