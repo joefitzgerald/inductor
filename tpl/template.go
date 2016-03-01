@@ -1,8 +1,12 @@
 package tpl
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -32,6 +36,35 @@ func (t *RootTemplate) FindPartialTemplate(path string) *PartialTemplate {
 	return nil
 }
 
+// Content of this template and all of its partial templates
+func (t *RootTemplate) Content() (string, error) {
+	var buffer bytes.Buffer
+
+	// write root template
+	tpl, err := ioutil.ReadFile(t.Path)
+	if err != nil {
+		return "", err
+	}
+	buffer.Write(tpl)
+
+	// write each partial template
+	for _, pt := range t.PartialTemplates {
+		// wrap the partial template define statement
+		defineName := strings.TrimPrefix(pt.BaseFilename(), t.BaseFilename())
+		defineName = strings.Replace(defineName, ".", "", -1)
+		buffer.WriteString(fmt.Sprintf("\n{{define \"%s\"}}", defineName))
+
+		err := pt.Content(&buffer)
+		if err != nil {
+			return "", err
+		}
+
+		buffer.WriteString("\n{{end}}")
+	}
+
+	return buffer.String(), nil
+}
+
 // FindPartialTemplates returns all partial templates associated with this template
 func (t *RootTemplate) FindPartialTemplates(osName string) []PartialTemplate {
 	partials := make(map[string]*PartialTemplate)
@@ -56,6 +89,17 @@ func (t *RootTemplate) FindPartialTemplates(osName string) []PartialTemplate {
 		distinctPartials = append(distinctPartials, *p)
 	}
 	return distinctPartials
+}
+
+// Content writes the partial template to the specified writer
+func (t *Template) Content(buffer io.Writer) error {
+	buffer.Write([]byte("\n"))
+	tpl, err := ioutil.ReadFile(t.Path)
+	if err != nil {
+		return err
+	}
+	buffer.Write(tpl)
+	return nil
 }
 
 // BaseFilename is the name of the file minus the file extension
@@ -95,5 +139,6 @@ func listFiles(globPattern string) []string {
 	if err != nil {
 		panic(err)
 	}
+	sort.Strings(templates)
 	return templates
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
 	"github.com/joefitzgerald/inductor/tpl"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -57,13 +58,23 @@ var _ = Describe("Tpl", func() {
 			It("should have 2 partial templates", func() {
 				Expect(rootTemplate.PartialTemplates).To(HaveLen(2))
 			})
-			It("should include Autounattend.xml.oobe.ptpl", func() {
+			It("should include c", func() {
 				path := filepath.Join(tmpDir, "Autounattend.xml.oobe.ptpl")
 				Expect(rootTemplate.FindPartialTemplate(path)).ToNot(BeNil())
 			})
 			It("should include Autounattend.xml.disks.ptpl", func() {
 				path := filepath.Join(tmpDir, "Autounattend.xml.disks.ptpl")
 				Expect(rootTemplate.FindPartialTemplate(path)).ToNot(BeNil())
+			})
+			It("should have template content", func() {
+				expected := `Autounattend.xml.tpl
+{{define "disks"}}
+Autounattend.xml.disks.ptpl
+{{end}}
+{{define "oobe"}}
+Autounattend.xml.oobe.ptpl
+{{end}}`
+				Expect(rootTemplate.Content()).To(Equal(expected))
 			})
 		})
 	})
