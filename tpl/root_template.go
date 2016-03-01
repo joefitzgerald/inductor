@@ -12,7 +12,7 @@ import (
 // RootTemplate is a root template (.tpl) and all its associated partial templates
 type RootTemplate struct {
 	Template
-	PartialTemplates []PartialTemplate
+	PartialTemplates []Template
 }
 
 // Content of this template and all of its partial templates
@@ -45,33 +45,36 @@ func (t *RootTemplate) Content() (string, error) {
 }
 
 // FindPartialTemplates returns all partial templates associated with this template
-func (t *RootTemplate) FindPartialTemplates(osName string) []PartialTemplate {
-	partials := make(map[string]*PartialTemplate)
+func (t *RootTemplate) FindPartialTemplates(osName string) []Template {
+	partials := make(map[string]*Template)
 
 	// get all shared partial templates
 	partialFiles := listPartialTemplatesFn(t.Dir(), t.BaseFilename())
 	for _, f := range partialFiles {
-		pt := &PartialTemplate{Template{f}}
+		pt := &Template{Path: f}
 		partials[pt.Filename()] = pt
 	}
 
 	// get all OS specific partial templates, overwriting any non-specific templates
 	partialFilesOS := listPartialTemplatesOSSpecificFn(t.Dir(), t.BaseFilename(), osName)
 	for _, f := range partialFilesOS {
-		pt := &PartialTemplate{Template{f}}
+		pt := &Template{Path: f}
 		partials[pt.Filename()] = pt
 	}
 
 	// flatten the map of partials
-	distinctPartials := []PartialTemplate{}
+	distinctPartials := []Template{}
 	for _, p := range partials {
 		distinctPartials = append(distinctPartials, *p)
 	}
+
+	// ensure a stable sort order so the template content is stable
+	sort.Sort(ByPath(distinctPartials))
 	return distinctPartials
 }
 
 // FindPartialTemplate finds the root template by path if it exists
-func (t *RootTemplate) FindPartialTemplate(path string) *PartialTemplate {
+func (t *RootTemplate) FindPartialTemplate(path string) *Template {
 	for _, pt := range t.PartialTemplates {
 		if pt.Path == path {
 			return &pt
