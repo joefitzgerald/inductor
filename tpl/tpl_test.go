@@ -5,9 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	//. "github.com/joefitzgerald/inductor/tpl"
-
 	"github.com/joefitzgerald/inductor/tpl"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
