@@ -22,11 +22,8 @@ func New(baseDir, osName string) *Templates {
 	// find all root templates
 	entries := listRootTemplatesFn(baseDir)
 	for _, e := range entries {
-		rootTemplate := RootTemplate{}
-		rootTemplate.Path = e
-		// This is a little less than ideal
-		rootTemplate.PartialTemplates = rootTemplate.FindPartialTemplates(osName)
-		templates.All = append(templates.All, rootTemplate)
+		rootTemplate := NewRootTemplate(e, osName)
+		templates.All = append(templates.All, *rootTemplate)
 	}
 
 	return templates

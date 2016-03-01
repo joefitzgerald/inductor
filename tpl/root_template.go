@@ -15,6 +15,39 @@ type RootTemplate struct {
 	PartialTemplates []Template
 }
 
+// NewRootTemplate create a new RootTemplate instance complete with partial templates
+func NewRootTemplate(path, osName string) *RootTemplate {
+	rootTemplate := &RootTemplate{}
+	rootTemplate.Path = path
+	partials := make(map[string]*Template)
+
+	// get all shared partial templates
+	partialFiles := listPartialTemplatesFn(rootTemplate.Dir(), rootTemplate.BaseFilename())
+	for _, f := range partialFiles {
+		pt := &Template{Path: f}
+		partials[pt.Filename()] = pt
+	}
+
+	// get all OS specific partial templates, overwriting any non-specific templates
+	partialFilesOS := listPartialTemplatesOSSpecificFn(rootTemplate.Dir(), rootTemplate.BaseFilename(), osName)
+	for _, f := range partialFilesOS {
+		pt := &Template{Path: f}
+		partials[pt.Filename()] = pt
+	}
+
+	// flatten the map of partials
+	distinctPartials := []Template{}
+	for _, p := range partials {
+		distinctPartials = append(distinctPartials, *p)
+	}
+
+	// ensure a stable sort order so the output content is diffable
+	sort.Sort(ByPath(distinctPartials))
+	rootTemplate.PartialTemplates = distinctPartials
+
+	return rootTemplate
+}
+
 // Content of this template and all of its partial templates
 func (t *RootTemplate) Content() (string, error) {
 	var buffer bytes.Buffer
@@ -42,35 +75,6 @@ func (t *RootTemplate) Content() (string, error) {
 	}
 
 	return buffer.String(), nil
-}
-
-// FindPartialTemplates returns all partial templates associated with this template
-func (t *RootTemplate) FindPartialTemplates(osName string) []Template {
-	partials := make(map[string]*Template)
-
-	// get all shared partial templates
-	partialFiles := listPartialTemplatesFn(t.Dir(), t.BaseFilename())
-	for _, f := range partialFiles {
-		pt := &Template{Path: f}
-		partials[pt.Filename()] = pt
-	}
-
-	// get all OS specific partial templates, overwriting any non-specific templates
-	partialFilesOS := listPartialTemplatesOSSpecificFn(t.Dir(), t.BaseFilename(), osName)
-	for _, f := range partialFilesOS {
-		pt := &Template{Path: f}
-		partials[pt.Filename()] = pt
-	}
-
-	// flatten the map of partials
-	distinctPartials := []Template{}
-	for _, p := range partials {
-		distinctPartials = append(distinctPartials, *p)
-	}
-
-	// ensure a stable sort order so the template content is stable
-	sort.Sort(ByPath(distinctPartials))
-	return distinctPartials
 }
 
 // FindPartialTemplate finds the root template by path if it exists
