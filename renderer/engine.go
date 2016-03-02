@@ -1,42 +1,50 @@
 package renderer
 
 import (
+	"bufio"
+	"bytes"
 	"io"
+	"os"
+	"path/filepath"
 	"text/template"
+
+	"github.com/joefitzgerald/inductor/tpl"
 )
 
+type engine struct {
+	renderOptions *RenderOptions
+	outDir        string
+}
+
+// New creates a new Renderer instance
+func New(opts *RenderOptions, outDir string) Renderer {
+	return &engine{
+		renderOptions: opts,
+		outDir:        outDir,
+	}
+}
+
 // Render generates the packer.json and Autounattend.xml files used by Packer
-func (pt *PackerTemplate) Render(ro *RenderOptions, packerJSON io.Writer, autounattendXML io.Writer, vagrantfile io.Writer) error {
-	err := pt.renderPackerJSON(ro, packerJSON)
-	if err == nil {
-		err = pt.renderAutounattendXML(ro, autounattendXML)
-		if err == nil {
-			err = pt.renderVagrantfile(ro, vagrantfile)
+func (e *engine) Render(tc tpl.TemplateContainer) error {
+	for _, t := range tc.ListTemplates() {
+		tOutPath := filepath.Join(e.outDir, t.BaseFilename())
+		tOutFile, err := os.Create(tOutPath)
+		if err != nil {
+			return err
 		}
+		defer tOutFile.Close()
+		tOutWriter := bufio.NewWriter(tOutFile)
+		e.renderTemplate(t, tOutWriter)
 	}
-	return err
+	return nil
 }
 
-func (pt *PackerTemplate) renderPackerJSON(ro *RenderOptions, packerJSON io.Writer) error {
-	tmpl, err := template.New("packer.json").Funcs(templateFuncs).Parse(pt.PackerTpl)
+func (e *engine) renderTemplate(tpl tpl.Templater, outWriter io.Writer) error {
+	var buffer bytes.Buffer
+	tpl.Content(&buffer)
+	tmpl, err := template.New("tpl").Funcs(templateFuncs).Parse(buffer.String())
 	if err != nil {
 		return err
 	}
-	return tmpl.Execute(packerJSON, ro)
-}
-
-func (pt *PackerTemplate) renderAutounattendXML(ro *RenderOptions, autounattendXML io.Writer) error {
-	tmpl, err := template.New("Autounattend.xml").Funcs(templateFuncs).Parse(pt.AutounattendTpl)
-	if err != nil {
-		return err
-	}
-	return tmpl.Execute(autounattendXML, ro)
-}
-
-func (pt *PackerTemplate) renderVagrantfile(ro *RenderOptions, vagrantfile io.Writer) error {
-	tmpl, err := template.New("Vagrantfile").Funcs(templateFuncs).Parse(pt.VagrantfileTpl)
-	if err != nil {
-		return err
-	}
-	return tmpl.Execute(vagrantfile, ro)
+	return tmpl.Execute(outWriter, e.renderOptions)
 }
