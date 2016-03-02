@@ -139,6 +139,9 @@ Autounattend.xml.oobe.ptpl
 			It("should have zero partial templates", func() {
 				Expect(rootTemplate.ListTemplates()).To(BeEmpty())
 			})
+			It("should have basefilename", func() {
+				Expect(rootTemplate.BaseFilename()).To(Equal("Vagrantfile"))
+			})
 		})
 	})
 })
