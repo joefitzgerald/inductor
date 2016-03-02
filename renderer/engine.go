@@ -27,15 +27,21 @@ func New(opts *RenderOptions, outDir string) Renderer {
 // Render generates the packer.json and Autounattend.xml files used by Packer
 func (e *engine) Render(tc tpl.TemplateContainer) error {
 	for _, t := range tc.ListTemplates() {
-		tOutPath := filepath.Join(e.outDir, t.BaseFilename())
-		tOutFile, err := os.Create(tOutPath)
-		if err != nil {
+		if err := e.writeTemplate(t); err != nil {
 			return err
 		}
-		defer tOutFile.Close()
-		tOutWriter := bufio.NewWriter(tOutFile)
-		e.renderTemplate(t, tOutWriter)
 	}
+	return nil
+}
+
+func (e *engine) writeTemplate(t tpl.Templater) error {
+	f, err := os.Create(filepath.Join(e.outDir, t.BaseFilename()))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	e.renderTemplate(t, w)
 	return nil
 }
 
