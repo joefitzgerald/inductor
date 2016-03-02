@@ -10,28 +10,28 @@ import (
 )
 
 // Template represents a path to a template file
-type Template struct {
-	Path             string
-	PartialTemplates []Templater
+type template struct {
+	path             string
+	partialTemplates []Templater
 }
 
 // NewRootTemplate create a new RootTemplate instance complete with partial templates
 func NewRootTemplate(path, osName string) Templater {
-	rootTemplate := &Template{}
-	rootTemplate.Path = path
-	partials := make(map[string]*Template)
+	rootTemplate := &template{}
+	rootTemplate.path = path
+	partials := make(map[string]*template)
 
 	// get all shared partial templates
 	partialFiles := listPartialTemplatesFn(rootTemplate.Dir(), rootTemplate.BaseFilename())
 	for _, f := range partialFiles {
-		pt := &Template{Path: f}
+		pt := &template{path: f}
 		partials[pt.Filename()] = pt
 	}
 
 	// get all OS specific partial templates, overwriting any non-specific templates
 	partialFilesOS := listPartialTemplatesOSSpecificFn(rootTemplate.Dir(), rootTemplate.BaseFilename(), osName)
 	for _, f := range partialFilesOS {
-		pt := &Template{Path: f}
+		pt := &template{path: f}
 		partials[pt.Filename()] = pt
 	}
 
@@ -43,46 +43,46 @@ func NewRootTemplate(path, osName string) Templater {
 
 	// ensure a stable sort order so the output content is diffable
 	sort.Sort(ByPath(distinctPartials))
-	rootTemplate.PartialTemplates = distinctPartials
+	rootTemplate.partialTemplates = distinctPartials
 
 	return rootTemplate
 }
 
 // FullPath returns the full path to the template file
-func (t *Template) FullPath() string {
-	return t.Path
+func (t *template) FullPath() string {
+	return t.path
 }
 
 // BaseFilename is the name of the file minus the file extension
-func (t *Template) BaseFilename() string {
-	ext := filepath.Ext(t.Path)
+func (t *template) BaseFilename() string {
+	ext := filepath.Ext(t.path)
 	return strings.TrimSuffix(t.Filename(), ext)
 }
 
 // Dir returns the template directory (no trailing slash)
-func (t *Template) Dir() string {
-	dir, _ := filepath.Split(t.Path)
+func (t *template) Dir() string {
+	dir, _ := filepath.Split(t.path)
 	dir = strings.TrimSuffix(dir, "/")
 	return dir
 }
 
 // Filename is the filename with extension of the file, no dir
-func (t *Template) Filename() string {
-	_, file := filepath.Split(t.Path)
+func (t *template) Filename() string {
+	_, file := filepath.Split(t.path)
 	return file
 }
 
 // Content of this template and all of its partial templates
-func (t *Template) Content(buffer io.Writer) error {
+func (t *template) Content(buffer io.Writer) error {
 	// write root template
-	tpl, err := ioutil.ReadFile(t.Path)
+	tpl, err := ioutil.ReadFile(t.path)
 	if err != nil {
 		return err
 	}
 	buffer.Write(tpl)
 
 	// write each partial template
-	for _, pt := range t.PartialTemplates {
+	for _, pt := range t.partialTemplates {
 		// wrap the partial template define statement
 		defineName := strings.TrimPrefix(pt.BaseFilename(), t.BaseFilename())
 		defineName = strings.Replace(defineName, ".", "", -1)
@@ -100,8 +100,8 @@ func (t *Template) Content(buffer io.Writer) error {
 }
 
 // FindTemplate finds the root template by path if it exists
-func (t *Template) FindTemplate(path string) Templater {
-	for _, pt := range t.PartialTemplates {
+func (t *template) FindTemplate(path string) Templater {
+	for _, pt := range t.partialTemplates {
 		if pt.FullPath() == path {
 			return pt
 		}
@@ -110,8 +110,8 @@ func (t *Template) FindTemplate(path string) Templater {
 }
 
 // ListTemplates lists all the associated partial templates
-func (t *Template) ListTemplates() []Templater {
-	return t.PartialTemplates
+func (t *template) ListTemplates() []Templater {
+	return t.partialTemplates
 }
 
 // for testing

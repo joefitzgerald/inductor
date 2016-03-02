@@ -6,38 +6,37 @@ import (
 )
 
 // Templates encompasses all templates within a base dir
-type Templates struct {
-	BaseDir string
-	OSName  string
-	All     []Templater
+type templates struct {
+	baseDir string
+	osName  string
+	all     []Templater
 }
 
 // New creates a new Templates instance
 func New(baseDir, osName string) TemplateContainer {
-	templates := &Templates{
-		BaseDir: baseDir,
-		OSName:  osName,
+	templates := &templates{
+		baseDir: baseDir,
+		osName:  osName,
 	}
 
 	// find all root templates
 	entries := listRootTemplatesFn(baseDir)
 	for _, e := range entries {
 		rootTemplate := NewRootTemplate(e, osName)
-		templates.All = append(templates.All, rootTemplate)
+		templates.all = append(templates.all, rootTemplate)
 	}
 
 	return templates
 }
 
 // ListTemplates returns all root templates
-func (t *Templates) ListTemplates() []Templater {
-	return t.All
+func (t *templates) ListTemplates() []Templater {
+	return t.all
 }
 
 // FindTemplate finds the root template by path if it exists
-// TODO: Should this be recursive?
-func (t *Templates) FindTemplate(path string) Templater {
-	for _, pt := range t.All {
+func (t *templates) FindTemplate(path string) Templater {
+	for _, pt := range t.all {
 		if pt.FullPath() == path {
 			return pt
 		}
