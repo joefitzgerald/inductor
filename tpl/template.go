@@ -12,11 +12,11 @@ import (
 // Template represents a path to a template file
 type Template struct {
 	Path             string
-	PartialTemplates []Template
+	PartialTemplates []Templater
 }
 
 // NewRootTemplate create a new RootTemplate instance complete with partial templates
-func NewRootTemplate(path, osName string) *Template {
+func NewRootTemplate(path, osName string) Templater {
 	rootTemplate := &Template{}
 	rootTemplate.Path = path
 	partials := make(map[string]*Template)
@@ -36,9 +36,9 @@ func NewRootTemplate(path, osName string) *Template {
 	}
 
 	// flatten the map of partials
-	distinctPartials := []Template{}
+	distinctPartials := []Templater{}
 	for _, p := range partials {
-		distinctPartials = append(distinctPartials, *p)
+		distinctPartials = append(distinctPartials, p)
 	}
 
 	// ensure a stable sort order so the output content is diffable
@@ -46,6 +46,11 @@ func NewRootTemplate(path, osName string) *Template {
 	rootTemplate.PartialTemplates = distinctPartials
 
 	return rootTemplate
+}
+
+// FullPath returns the full path to the template file
+func (t *Template) FullPath() string {
+	return t.Path
 }
 
 // BaseFilename is the name of the file minus the file extension
@@ -94,14 +99,19 @@ func (t *Template) Content(buffer io.Writer) error {
 	return nil
 }
 
-// FindPartialTemplate finds the root template by path if it exists
-func (t *Template) FindPartialTemplate(path string) *Template {
+// FindTemplate finds the root template by path if it exists
+func (t *Template) FindTemplate(path string) Templater {
 	for _, pt := range t.PartialTemplates {
-		if pt.Path == path {
-			return &pt
+		if pt.FullPath() == path {
+			return pt
 		}
 	}
 	return nil
+}
+
+// ListTemplates lists all the associated partial templates
+func (t *Template) ListTemplates() []Templater {
+	return t.PartialTemplates
 }
 
 // for testing
@@ -127,7 +137,7 @@ func listFiles(globPattern string) []string {
 }
 
 // ByPath is a type for sorting Templates
-type ByPath []Template
+type ByPath []Templater
 
 // Len is the count of elements
 func (a ByPath) Len() int {
@@ -141,5 +151,5 @@ func (a ByPath) Swap(i, j int) {
 
 // Less compares two elements and returns true if i is less than j
 func (a ByPath) Less(i, j int) bool {
-	return a[i].Path < a[j].Path
+	return a[i].FullPath() < a[j].FullPath()
 }
