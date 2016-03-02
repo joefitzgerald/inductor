@@ -17,7 +17,7 @@ var _ = Describe("Tpl", func() {
 		err       error
 		osName    string
 		tmpDir    string
-		templates *tpl.Templates
+		templates tpl.TemplateContainer
 	)
 	BeforeEach(func() {
 		tmpDir, err = ioutil.TempDir("", "inductor")

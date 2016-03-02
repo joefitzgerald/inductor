@@ -13,7 +13,7 @@ type Templates struct {
 }
 
 // New creates a new Templates instance
-func New(baseDir, osName string) *Templates {
+func New(baseDir, osName string) TemplateContainer {
 	templates := &Templates{
 		BaseDir: baseDir,
 		OSName:  osName,
@@ -27,6 +27,11 @@ func New(baseDir, osName string) *Templates {
 	}
 
 	return templates
+}
+
+// ListTemplates returns all root templates
+func (t *Templates) ListTemplates() []Template {
+	return t.All
 }
 
 // FindTemplate finds the root template by path if it exists
