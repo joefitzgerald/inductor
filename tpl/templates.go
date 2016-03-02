@@ -9,7 +9,7 @@ import (
 type Templates struct {
 	BaseDir string
 	OSName  string
-	All     []RootTemplate
+	All     []Template
 }
 
 // New creates a new Templates instance
@@ -30,7 +30,8 @@ func New(baseDir, osName string) *Templates {
 }
 
 // FindTemplate finds the root template by path if it exists
-func (t *Templates) FindTemplate(path string) *RootTemplate {
+// TODO: Should this be recursive?
+func (t *Templates) FindTemplate(path string) *Template {
 	for _, pt := range t.All {
 		if pt.Path == path {
 			return &pt

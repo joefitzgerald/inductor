@@ -1,6 +1,7 @@
 package tpl_test
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -48,7 +49,7 @@ var _ = Describe("Tpl", func() {
 			osName = "windows2012r2"
 		})
 		Describe("Autounattend.xml.tpl root template", func() {
-			var rootTemplate *tpl.RootTemplate
+			var rootTemplate *tpl.Template
 			JustBeforeEach(func() {
 				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Autounattend.xml.tpl"))
 			})
@@ -74,7 +75,9 @@ Autounattend.xml.disks.ptpl
 {{define "oobe"}}
 Autounattend.xml.oobe.ptpl
 {{end}}`
-				Expect(rootTemplate.Content()).To(Equal(expected))
+				var buffer bytes.Buffer
+				Expect(rootTemplate.Content(&buffer)).NotTo(HaveOccurred())
+				Expect(buffer.String()).To(Equal(expected))
 			})
 		})
 	})
@@ -84,7 +87,7 @@ Autounattend.xml.oobe.ptpl
 			osName = "nano"
 		})
 		Describe("Autounattend.xml.tpl root template", func() {
-			var rootTemplate *tpl.RootTemplate
+			var rootTemplate *tpl.Template
 			JustBeforeEach(func() {
 				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Autounattend.xml.tpl"))
 			})
@@ -105,7 +108,7 @@ Autounattend.xml.oobe.ptpl
 		})
 
 		Describe("packer.json.tpl root template", func() {
-			var rootTemplate *tpl.RootTemplate
+			var rootTemplate *tpl.Template
 			JustBeforeEach(func() {
 				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "packer.json.tpl"))
 			})
@@ -126,7 +129,7 @@ Autounattend.xml.oobe.ptpl
 		})
 
 		Describe("Vagrantfile.tpl root template", func() {
-			var rootTemplate *tpl.RootTemplate
+			var rootTemplate *tpl.Template
 			JustBeforeEach(func() {
 				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Vagrantfile.tpl"))
 			})
