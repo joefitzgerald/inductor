@@ -59,7 +59,7 @@ var _ = Describe("Tpl", func() {
 			It("should have 2 partial templates", func() {
 				Expect(rootTemplate.PartialTemplates).To(HaveLen(2))
 			})
-			It("should include c", func() {
+			It("should include Autounattend.xml.oobe.ptpl", func() {
 				path := filepath.Join(tmpDir, "Autounattend.xml.oobe.ptpl")
 				Expect(rootTemplate.FindPartialTemplate(path)).ToNot(BeNil())
 			})
