@@ -26,12 +26,19 @@ func New(opts *RenderOptions, outDir string) Renderer {
 
 // Render generates the packer.json and Autounattend.xml files used by Packer
 func (e *engine) Render(tc tpl.TemplateContainer) error {
+	if err := e.createOutputDir(); err != nil {
+		return err
+	}
 	for _, t := range tc.ListTemplates() {
 		if err := e.writeTemplate(t); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (e *engine) createOutputDir() error {
+	return os.MkdirAll(e.outDir, 0777)
 }
 
 func (e *engine) writeTemplate(t tpl.Templater) error {
