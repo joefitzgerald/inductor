@@ -48,6 +48,7 @@ func (e *engine) writeTemplate(t tpl.Templater) error {
 	}
 	defer f.Close()
 	w := bufio.NewWriter(f)
+	defer w.Flush()
 	e.renderTemplate(t, w)
 	return nil
 }

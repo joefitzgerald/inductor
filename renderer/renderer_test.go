@@ -16,17 +16,19 @@ import (
 
 var _ = Describe("Renderer", func() {
 	var (
-		err           error
-		engine        renderer.Renderer
-		templates     *fakes.FakeTemplateContainer
-		renderOptions *renderer.RenderOptions
-		outDir        string
+		err             error
+		engine          renderer.Renderer
+		templates       *fakes.FakeTemplateContainer
+		renderOptions   *renderer.RenderOptions
+		outDir          string
+		vagrantfilePath string
 	)
 
 	Describe("Vagrantfile template", func() {
 		BeforeEach(func() {
 			outDir, err = ioutil.TempDir("", "inductor")
 			Expect(err).NotTo(HaveOccurred())
+			vagrantfilePath = filepath.Join(outDir, "Vagrantfile")
 			renderOptions = renderer.NewDefaultRenderOptions()
 			vagrantTemplate := new(fakes.FakeTemplater)
 			vagrantTemplate.ContentStub = writeVagrantfile
@@ -42,10 +44,13 @@ var _ = Describe("Renderer", func() {
 		It("should not have errored", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
-		// TODO: need to test actually rendering a file
 		It("should render Vagrantfile in out dir", func() {
-			vagrantfilePath := filepath.Join(outDir, "Vagrantfile")
 			Expect(vagrantfilePath).To(BeARegularFile())
+		})
+		It("should contain Vagrant configure block", func() {
+			bytes, err := ioutil.ReadFile(vagrantfilePath)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(bytes)).To(ContainSubstring("Vagrant.configure(\"2\") do |config|"))
 		})
 	})
 })
