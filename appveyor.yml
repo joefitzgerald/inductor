@@ -1,0 +1,33 @@
+version: "{build}"
+
+platform: x64
+
+branches:
+  only:
+    - master
+
+skip_tags: true
+
+environment:
+  GOPATH: c:\gopath
+
+  matrix:
+  - GOVERSION: 1.6
+
+install:
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - rmdir c:\go /s /q
+  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
+  - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
+  - go version
+  - mkdir c:\gopath
+  - go get -u github.com/alecthomas/gometalinter
+  - gometalinter -i -u -f
+  - gometalinter --exclude="(_test.go)" --deadline=1m ./...
+
+build_script:
+  - go build ./...
+  - go test ./...
+
+test: off
+deploy: off

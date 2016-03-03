@@ -1,11 +1,19 @@
 language: go
+sudo: false
+
+branches:
+  only:
+    - master
 
 go:
-    - tip
+  - 1.6
+  - tip
 
 script:
-    - make test
+  - go get -u github.com/alecthomas/gometalinter
+  - gometalinter -i -u -f
+  - gometalinter --exclude="(_test.go)" --deadline=1m ./...
 
 matrix:
-    allow_failures:
-        - go: tip
+  allow_failures:
+    - go: tip
