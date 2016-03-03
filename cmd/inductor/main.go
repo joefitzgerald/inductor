@@ -106,6 +106,15 @@ func newApp() *cli.App {
 			opts.Communicator = "ssh"
 		}
 
+		outDir := config.OutDir
+		if len(c.String("outdir")) > 0 {
+			outDir = c.String("outdir")
+		}
+		outDir, err = filepath.Abs(outDir)
+		if err != nil {
+			die(err)
+		}
+
 		// find all templates
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -114,10 +123,6 @@ func newApp() *cli.App {
 		templates := tpl.New(cwd, osname)
 
 		// finally render all the templates to the output directory
-		outDir, err := filepath.Abs(config.OutDir)
-		if err != nil {
-			die(err)
-		}
 		renderer := renderer.New(opts, outDir)
 		err = renderer.Render(templates)
 		if err != nil {
