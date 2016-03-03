@@ -8,6 +8,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/joefitzgerald/inductor/configuration"
 	"github.com/joefitzgerald/inductor/renderer"
+	"github.com/joefitzgerald/inductor/tpl"
 )
 
 // Version of the CLI
@@ -42,15 +43,15 @@ func newApp() *cli.App {
 			Usage: "The optional operating system edition",
 		},
 		cli.StringFlag{
-			Name:  "productkey, pk",
+			Name:  "productkey, k",
 			Usage: "The MS Windows product key if you have one",
 		},
 		cli.BoolFlag{
-			Name:  "skipwindowsupdates, swu",
+			Name:  "skipwindowsupdates, u",
 			Usage: "Skips running Windows updates on first boot",
 		},
 		cli.BoolFlag{
-			Name:  "ssh",
+			Name:  "ssh, s",
 			Usage: "Uses the Packer SSH communicator instead of the default WinRM",
 		},
 		cli.BoolFlag{
@@ -105,22 +106,26 @@ func newApp() *cli.App {
 			opts.Communicator = "ssh"
 		}
 
+		// find all templates
+		cwd, err := os.Getwd()
+		if err != nil {
+			die(err)
+		}
+		templates := tpl.New(cwd, osname)
+
 		// finally render all the templates to the output directory
 		outDir, err := filepath.Abs(config.OutDir)
 		if err != nil {
 			die(err)
 		}
-		tpl, err := renderer.NewPackerTemplateWithOverrides(outDir, opts.OSName)
-		if err != nil {
-			die(err)
-		}
-		err = tpl.Render(opts, packerJSONWriter, autounattendXMLWriter, vagrantfileWriter)
+		renderer := renderer.New(opts, outDir)
+		err = renderer.Render(templates)
 		if err != nil {
 			die(err)
 		}
 
 		// this allows us to do command substitution with Packer
-		fmt.Print(packerJSONOutPath)
+		// TODO: output path to packer.json
 	}
 	return app
 }
