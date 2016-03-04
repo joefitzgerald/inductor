@@ -12,7 +12,8 @@ go:
 script:
   - go get -u github.com/alecthomas/gometalinter
   - gometalinter -i -u -f
-  - gometalinter --exclude="(_test.go)" --deadline=1m ./...
+  - go install ./...
+  - gometalinter --exclude="(_test.go|fakes)" --deadline=1m ./... --disable=aligncheck
 
 matrix:
   allow_failures:
