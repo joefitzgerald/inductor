@@ -8,9 +8,10 @@ branches:
 
 skip_tags: true
 
+clone_folder: c:\gopath\src\github.com\joefitzgerald\inductor
+
 environment:
   GOPATH: c:\gopath
-  clone_folder: c:\gopath\src\github.com\joefitzgerald\inductor
 
   matrix:
   - GOVERSION: 1.6
