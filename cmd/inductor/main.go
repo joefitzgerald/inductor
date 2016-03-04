@@ -63,13 +63,17 @@ func newApp() *cli.App {
 		// load the inductor configuration
 		configFile, err := os.Open(c.String("config"))
 		if err != nil {
-			die("Couldn't find the requried inductor.json configuration file", err)
+			die("Couldn't find the requried inductor.json configuration file.", err)
 		}
-		defer configFile.Close()
+		defer func() {
+			if cerr := configFile.Close(); cerr != nil {
+				die(cerr)
+			}
+		}()
 
 		config, err := configuration.New(configFile)
 		if err != nil {
-			die("Couldn't load the inductor.json configuration file", err)
+			die("Couldn't load the inductor.json configuration file.", err)
 		}
 
 		// get our required windows version/edition string, e.g. 'windows10'
@@ -128,16 +132,13 @@ func newApp() *cli.App {
 		if err != nil {
 			die(err)
 		}
-
-		// this allows us to do command substitution with Packer
-		// TODO: output path to packer.json
 	}
 	return app
 }
 
 func die(vals ...interface{}) {
 	if len(vals) > 1 || vals[0] != nil {
-		os.Stderr.WriteString(fmt.Sprintln(vals...))
+		fmt.Fprintf(os.Stderr, fmt.Sprintln(vals...))
 		os.Exit(1)
 	}
 }
