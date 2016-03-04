@@ -10,12 +10,12 @@ skip_tags: true
 
 environment:
   GOPATH: c:\gopath
+  clone_folder: c:\gopath\src\github.com\joefitzgerald\inductor
 
   matrix:
   - GOVERSION: 1.6
 
 install:
-  - mkdir c:\gopath
   - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
   - rmdir c:\go /s /q
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
