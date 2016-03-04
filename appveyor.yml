@@ -15,12 +15,14 @@ environment:
   - GOVERSION: 1.6
 
 install:
+  - mkdir c:\gopath
   - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
   - rmdir c:\go /s /q
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
   - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
   - go version
-  - mkdir c:\gopath
+  - go env
+  - go get -t -v ./...
   - go get -u github.com/alecthomas/gometalinter
   - gometalinter -i -u -f
   - go install ./...
