@@ -40,7 +40,11 @@ func NewRenderOptions(osname string, edition string, config *configuration.Induc
 	opts.Communicator = config.Communicator
 	opts.Headless = config.Headless
 	opts.WindowsUpdates = config.WindowsUpdates
-	// TODO: Username, Password, DiskSize, RAM, CPU
+	opts.Username = config.Username
+	opts.Password = config.Password
+	opts.DiskSize = config.DiskSize
+	opts.RAM = config.RAM
+	opts.CPU = config.CPU
 
 	// default all rendering options to values in the OS registry
 	opts.OSName = os.Name
@@ -49,7 +53,6 @@ func NewRenderOptions(osname string, edition string, config *configuration.Induc
 	opts.IsoURL = os.IsoURL
 	opts.VirtualboxGuestOsType = os.VirtualboxGuestOsType
 	opts.VmwareGuestOsType = os.VmwareGuestOsType
-	// TODO: Username, Password, DiskSize, RAM, CPU per OS
 
 	// edition specific attributes
 	if len(edition) == 0 {

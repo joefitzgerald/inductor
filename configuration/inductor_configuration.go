@@ -3,6 +3,7 @@ package configuration
 import (
 	"encoding/json"
 	"io"
+	"sort"
 )
 
 // InductorConfiguration contains all OS details
@@ -11,6 +12,11 @@ type InductorConfiguration struct {
 	WindowsUpdates   bool   `json:"windows_updates"`
 	Communicator     string `json:"communicator"`
 	OutDir           string `json:"out_dir"`
+	Username         string `json:"username"`
+	Password         string `json:"password"`
+	DiskSize         uint32 `json:"disk_size"`
+	RAM              uint32 `json:"ram"`
+	CPU              uint8  `json:"cpu"`
 	OperatingSystems map[string]OperatingSystem
 }
 
@@ -39,6 +45,7 @@ func (reg *InductorConfiguration) List() []string {
 		keys[i] = k
 		i++
 	}
+	sort.Strings(keys)
 	return keys
 }
 
