@@ -79,21 +79,31 @@ func (t *template) Content(buffer io.Writer) error {
 	if err != nil {
 		return err
 	}
-	buffer.Write(tpl)
+
+	_, err = buffer.Write(tpl)
+	if err != nil {
+		return err
+	}
 
 	// write each partial template
 	for _, pt := range t.partialTemplates {
 		// wrap the partial template define statement
 		defineName := strings.TrimPrefix(pt.BaseFilename(), t.BaseFilename())
 		defineName = strings.Replace(defineName, ".", "", -1)
-		buffer.Write([]byte(fmt.Sprintf("\n{{define \"%s\"}}\n", defineName)))
+		_, err = buffer.Write([]byte(fmt.Sprintf("\n{{define \"%s\"}}\n", defineName)))
+		if err != nil {
+			return err
+		}
 
 		err := pt.Content(buffer)
 		if err != nil {
 			return err
 		}
 
-		buffer.Write([]byte("\n{{end}}"))
+		_, err = buffer.Write([]byte("\n{{end}}"))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -8,6 +8,8 @@ branches:
 
 skip_tags: true
 
+clone_folder: c:\gopath\src\github.com\joefitzgerald\inductor
+
 environment:
   GOPATH: c:\gopath
 
@@ -20,14 +22,12 @@ install:
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
   - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
   - go version
-  - mkdir c:\gopath
-  - go get -u github.com/alecthomas/gometalinter
-  - gometalinter -i -u -f
-  - gometalinter --exclude="(_test.go)" --deadline=1m ./...
+  - go env
+  - go get -t -v ./...
 
 build_script:
   - go build ./...
-  - go test ./...
+  - go test -v ./...
 
 test: off
 deploy: off

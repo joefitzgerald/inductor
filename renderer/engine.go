@@ -41,21 +41,32 @@ func (e *engine) createOutputDir() error {
 	return os.MkdirAll(e.outDir, 0777)
 }
 
-func (e *engine) writeTemplate(t tpl.Templater) error {
+func (e *engine) writeTemplate(t tpl.Templater) (err error) {
 	f, err := os.Create(filepath.Join(e.outDir, t.BaseFilename()))
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
 	w := bufio.NewWriter(f)
-	defer w.Flush()
-	e.renderTemplate(t, w)
-	return nil
+	defer func() {
+		if cerr := w.Flush(); cerr != nil {
+			err = cerr
+		}
+	}()
+	err = e.renderTemplate(t, w)
+	return err
 }
 
 func (e *engine) renderTemplate(tpl tpl.Templater, outWriter io.Writer) error {
 	var buffer bytes.Buffer
-	tpl.Content(&buffer)
+	err := tpl.Content(&buffer)
+	if err != nil {
+		return err
+	}
 	tmpl, err := template.New("tpl").Funcs(templateFuncs).Parse(buffer.String())
 	if err != nil {
 		return err
