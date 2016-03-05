@@ -52,8 +52,16 @@ func (cp *fileCopier) initCopyDirs(srcDir, outDir string) error {
 }
 
 func (cp *fileCopier) walkFile(sf string, sfi os.FileInfo, err error) error {
-	// don't directly do anything with subdirs template files
-	if sfi.IsDir() || filepath.Ext(sf) == ".template" || filepath.Ext(sf) == ".partial" {
+	if sfi.IsDir() {
+		if strings.HasPrefix(sfi.Name(), ".") {
+			// don't copy hidden dirs
+			return filepath.SkipDir
+		}
+		return nil
+	}
+
+	// don't copy template files
+	if strings.HasPrefix(sfi.Name(), ".") || filepath.Ext(sf) == ".template" || filepath.Ext(sf) == ".partial" {
 		return nil
 	}
 

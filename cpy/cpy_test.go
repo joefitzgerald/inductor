@@ -30,6 +30,8 @@ var _ = Describe("Cpy", func() {
 		createFile(srcDir, "scripts/winrm.ps1")
 		createFile(srcDir, "scripts/windows-updates.ps1")
 		createFile(srcDir, "scripts/nano/SetupComplete.cmd")
+		createFile(srcDir, ".git/blah")
+		createFile(srcDir, ".gitignore")
 		outDir, err = ioutil.TempDir("", "inductor-out")
 		Expect(err).NotTo(HaveOccurred())
 		copier = cpy.New()
@@ -60,6 +62,14 @@ var _ = Describe("Cpy", func() {
 			Expect(filepath.Join(outDir, "scripts/winrm.ps1")).To(BeARegularFile())
 			Expect(filepath.Join(outDir, "scripts/windows-updates.ps1")).To(BeARegularFile())
 			Expect(filepath.Join(outDir, "scripts/nano/SetupComplete.cmd")).To(BeARegularFile())
+		})
+		It("should not copy hidden dirs", func() {
+			path := filepath.Join(outDir, ".git")
+			Expect(path).ToNot(BeADirectory())
+		})
+		It("should not copy hidden files", func() {
+			path := filepath.Join(outDir, ".gitignore")
+			Expect(path).ToNot(BeARegularFile())
 		})
 	})
 })
