@@ -21,7 +21,7 @@ var _ = Describe("Cpy", func() {
 	)
 
 	BeforeEach(func() {
-		srcDir, err = ioutil.TempDir("", "inductor-src")
+		srcDir, err = ioutil.TempDir("", "inductor")
 		Expect(err).NotTo(HaveOccurred())
 		createFile(srcDir, "README.md")
 		createFile(srcDir, "Vagrantfile")
@@ -32,14 +32,12 @@ var _ = Describe("Cpy", func() {
 		createFile(srcDir, "scripts/nano/SetupComplete.cmd")
 		createFile(srcDir, ".git/blah")
 		createFile(srcDir, ".gitignore")
-		outDir, err = ioutil.TempDir("", "inductor-out")
-		Expect(err).NotTo(HaveOccurred())
+		outDir = filepath.Join(srcDir, "out")
 		copier = cpy.New()
 		err = copier.Copy(srcDir, outDir)
 	})
 	AfterEach(func() {
 		os.RemoveAll(srcDir)
-		os.RemoveAll(outDir)
 	})
 
 	Describe("Copy recursive", func() {
@@ -70,6 +68,10 @@ var _ = Describe("Cpy", func() {
 		It("should not copy hidden files", func() {
 			path := filepath.Join(outDir, ".gitignore")
 			Expect(path).ToNot(BeARegularFile())
+		})
+		It("should not copy out dir to out dir", func() {
+			path := filepath.Join(outDir, "out")
+			Expect(path).ToNot(BeADirectory())
 		})
 	})
 })

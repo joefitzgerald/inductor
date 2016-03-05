@@ -53,8 +53,8 @@ func (cp *fileCopier) initCopyDirs(srcDir, outDir string) error {
 
 func (cp *fileCopier) walkFile(sf string, sfi os.FileInfo, err error) error {
 	if sfi.IsDir() {
-		if strings.HasPrefix(sfi.Name(), ".") {
-			// don't copy hidden dirs
+		// don't copy hidden dirs or the output dir into the output dir
+		if strings.HasPrefix(sfi.Name(), ".") || sf == cp.outDir {
 			return filepath.SkipDir
 		}
 		return nil
