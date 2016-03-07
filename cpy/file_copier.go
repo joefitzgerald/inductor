@@ -37,7 +37,10 @@ func (cp *fileCopier) initCopyDirs(srcDir, outDir string) error {
 	tfi, err := os.Stat(outDir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			os.MkdirAll(outDir, 0777)
+			err = mkdir(outDir)
+			if err != nil {
+				return err
+			}
 		} else {
 			return err
 		}
@@ -54,14 +57,14 @@ func (cp *fileCopier) initCopyDirs(srcDir, outDir string) error {
 func (cp *fileCopier) walkFile(sf string, sfi os.FileInfo, err error) error {
 	if sfi.IsDir() {
 		// don't copy hidden dirs or the output dir into the output dir
-		if strings.HasPrefix(sfi.Name(), ".") || sf == cp.outDir {
+		if isHiddenFileOrDir(sfi) || sf == cp.outDir {
 			return filepath.SkipDir
 		}
 		return nil
 	}
 
-	// don't copy template files
-	if strings.HasPrefix(sfi.Name(), ".") || filepath.Ext(sf) == ".template" || filepath.Ext(sf) == ".partial" {
+	// don't copy hidden files or templates
+	if isHiddenFileOrDir(sfi) || isTemplate(sf) {
 		return nil
 	}
 
@@ -70,17 +73,13 @@ func (cp *fileCopier) walkFile(sf string, sfi os.FileInfo, err error) error {
 	df := filepath.Join(cp.outDir, rel)
 	dir := filepath.Dir(df)
 
-	if err = cp.mkdir(dir); err != nil {
+	if err = mkdir(dir); err != nil {
 		return err
 	}
 	if err = cp.copyFile(sf, df); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (cp *fileCopier) mkdir(dir string) error {
-	return os.MkdirAll(dir, 0777)
 }
 
 func (cp *fileCopier) copyFile(source, target string) (err error) {
@@ -109,4 +108,16 @@ func (cp *fileCopier) copyFile(source, target string) (err error) {
 	}
 	err = tf.Sync()
 	return err
+}
+
+func isHiddenFileOrDir(fi os.FileInfo) bool {
+	return strings.HasPrefix(fi.Name(), ".")
+}
+
+func isTemplate(file string) bool {
+	return filepath.Ext(file) == ".template" || filepath.Ext(file) == ".partial"
+}
+
+func mkdir(dir string) error {
+	return os.MkdirAll(dir, 0777)
 }
