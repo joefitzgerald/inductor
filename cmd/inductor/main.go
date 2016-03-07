@@ -134,6 +134,9 @@ func createRenderOpts(c *cli.Context, config *configuration.InductorConfiguratio
 		edition = c.String("edition")
 	}
 	opts, err := renderer.NewRenderOptions(osname, edition, config)
+	if err != nil {
+		return nil, err
+	}
 
 	// apply any command line overrides to the options set
 	opts.WindowsUpdates = !c.Bool("skipwindowsupdates")
