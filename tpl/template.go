@@ -129,11 +129,11 @@ var listPartialTemplatesFn = listPartialTemplates
 var listPartialTemplatesOSSpecificFn = listPartialTemplatesOSSpecific
 
 func listPartialTemplates(baseDir, baseFilename string) []string {
-	return listFiles(fmt.Sprintf("%s/%s*.ptpl", baseDir, baseFilename))
+	return listFiles(fmt.Sprintf("%s/%s*.partial", baseDir, baseFilename))
 }
 
 func listPartialTemplatesOSSpecific(baseDir, baseFilename, osName string) []string {
-	return listFiles(fmt.Sprintf("%s/%s/%s*.ptpl", baseDir, osName, baseFilename))
+	return listFiles(fmt.Sprintf("%s/%s/%s*.partial", baseDir, osName, baseFilename))
 }
 
 func listFiles(globPattern string) []string {

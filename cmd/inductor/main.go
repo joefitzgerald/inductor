@@ -8,6 +8,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/joefitzgerald/inductor/configuration"
+	"github.com/joefitzgerald/inductor/cpy"
 	"github.com/joefitzgerald/inductor/renderer"
 	"github.com/joefitzgerald/inductor/tpl"
 )
@@ -85,9 +86,16 @@ func run(c *cli.Context) {
 	}
 	templates := tpl.New(cwd, opts.OSName)
 
-	// finally render all the templates to the output directory
+	// render all the templates to the output directory
 	renderer := renderer.New(opts, outDir)
 	err = renderer.Render(templates)
+	if err != nil {
+		die(err)
+	}
+
+	// copy over any non-templates to the output directory
+	copier := cpy.New()
+	err = copier.Copy(cwd, outDir)
 	if err != nil {
 		die(err)
 	}

@@ -22,20 +22,20 @@ var _ = Describe("Tpl", func() {
 	BeforeEach(func() {
 		tmpDir, err = ioutil.TempDir("", "inductor")
 		Expect(err).NotTo(HaveOccurred())
-		createTemplateFile(tmpDir, "nano/Autounattend.xml.disks.ptpl")
-		createTemplateFile(tmpDir, "nano/packer.json.provisioners.ptpl")
-		createTemplateFile(tmpDir, "windowsxp/Autounattend.xml.tpl")
+		createTemplateFile(tmpDir, "nano/Autounattend.xml.disks.partial")
+		createTemplateFile(tmpDir, "nano/packer.json.provisioners.partial")
+		createTemplateFile(tmpDir, "windowsxp/Autounattend.xml.template")
 		createTemplateFile(tmpDir, "scripts/win-updates.ps1")
 		createTemplateFile(tmpDir, "scripts/nano/SetupComplete.cmd")
 		createTemplateFile(tmpDir, "inductor.json")
 		createTemplateFile(tmpDir, "README.md")
-		createTemplateFile(tmpDir, "Autounattend.xml.tpl")
-		createTemplateFile(tmpDir, "Autounattend.xml.oobe.ptpl")
-		createTemplateFile(tmpDir, "Autounattend.xml.disks.ptpl")
-		createTemplateFile(tmpDir, "packer.json.tpl")
-		createTemplateFile(tmpDir, "packer.json.builders.ptpl")
-		createTemplateFile(tmpDir, "packer.json.provisioners.ptpl")
-		createTemplateFile(tmpDir, "Vagrantfile.tpl")
+		createTemplateFile(tmpDir, "Autounattend.xml.template")
+		createTemplateFile(tmpDir, "Autounattend.xml.oobe.partial")
+		createTemplateFile(tmpDir, "Autounattend.xml.disks.partial")
+		createTemplateFile(tmpDir, "packer.json.template")
+		createTemplateFile(tmpDir, "packer.json.builders.partial")
+		createTemplateFile(tmpDir, "packer.json.provisioners.partial")
+		createTemplateFile(tmpDir, "Vagrantfile.template")
 	})
 	JustBeforeEach(func() {
 		templates = tpl.New(tmpDir, osName)
@@ -48,10 +48,10 @@ var _ = Describe("Tpl", func() {
 		BeforeEach(func() {
 			osName = "windows2012r2"
 		})
-		Describe("Autounattend.xml.tpl root template", func() {
+		Describe("Autounattend.xml.template root template", func() {
 			var rootTemplate tpl.Templater
 			JustBeforeEach(func() {
-				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Autounattend.xml.tpl"))
+				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Autounattend.xml.template"))
 			})
 			It("should be found", func() {
 				Expect(rootTemplate).ToNot(BeNil())
@@ -59,21 +59,21 @@ var _ = Describe("Tpl", func() {
 			It("should have 2 partial templates", func() {
 				Expect(rootTemplate.ListTemplates()).To(HaveLen(2))
 			})
-			It("should include Autounattend.xml.oobe.ptpl", func() {
-				path := filepath.Join(tmpDir, "Autounattend.xml.oobe.ptpl")
+			It("should include Autounattend.xml.oobe.partial", func() {
+				path := filepath.Join(tmpDir, "Autounattend.xml.oobe.partial")
 				Expect(rootTemplate.FindTemplate(path)).ToNot(BeNil())
 			})
-			It("should include Autounattend.xml.disks.ptpl", func() {
-				path := filepath.Join(tmpDir, "Autounattend.xml.disks.ptpl")
+			It("should include Autounattend.xml.disks.partial", func() {
+				path := filepath.Join(tmpDir, "Autounattend.xml.disks.partial")
 				Expect(rootTemplate.FindTemplate(path)).ToNot(BeNil())
 			})
 			It("should have template content", func() {
-				expected := `Autounattend.xml.tpl
+				expected := `Autounattend.xml.template
 {{define "disks"}}
-Autounattend.xml.disks.ptpl
+Autounattend.xml.disks.partial
 {{end}}
 {{define "oobe"}}
-Autounattend.xml.oobe.ptpl
+Autounattend.xml.oobe.partial
 {{end}}`
 				var buffer bytes.Buffer
 				Expect(rootTemplate.Content(&buffer)).NotTo(HaveOccurred())
@@ -86,10 +86,10 @@ Autounattend.xml.oobe.ptpl
 		BeforeEach(func() {
 			osName = "nano"
 		})
-		Describe("Autounattend.xml.tpl root template", func() {
+		Describe("Autounattend.xml.template root template", func() {
 			var rootTemplate tpl.Templater
 			JustBeforeEach(func() {
-				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Autounattend.xml.tpl"))
+				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Autounattend.xml.template"))
 			})
 			It("should be found", func() {
 				Expect(rootTemplate).ToNot(BeNil())
@@ -97,20 +97,20 @@ Autounattend.xml.oobe.ptpl
 			It("should have 2 partial templates", func() {
 				Expect(rootTemplate.ListTemplates()).To(HaveLen(2))
 			})
-			It("should include Autounattend.xml.oobe.ptpl", func() {
-				path := filepath.Join(tmpDir, "Autounattend.xml.oobe.ptpl")
+			It("should include Autounattend.xml.oobe.partial", func() {
+				path := filepath.Join(tmpDir, "Autounattend.xml.oobe.partial")
 				Expect(rootTemplate.FindTemplate(path)).ToNot(BeNil())
 			})
-			It("should include nano/Autounattend.xml.disks.ptpl", func() {
-				path := filepath.Join(tmpDir, "nano/Autounattend.xml.disks.ptpl")
+			It("should include nano/Autounattend.xml.disks.partial", func() {
+				path := filepath.Join(tmpDir, "nano/Autounattend.xml.disks.partial")
 				Expect(rootTemplate.FindTemplate(path)).ToNot(BeNil())
 			})
 		})
 
-		Describe("packer.json.tpl root template", func() {
+		Describe("packer.json.template root template", func() {
 			var rootTemplate tpl.Templater
 			JustBeforeEach(func() {
-				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "packer.json.tpl"))
+				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "packer.json.template"))
 			})
 			It("should be found", func() {
 				Expect(rootTemplate).ToNot(BeNil())
@@ -118,20 +118,20 @@ Autounattend.xml.oobe.ptpl
 			It("should have 2 partial templates", func() {
 				Expect(rootTemplate.ListTemplates()).To(HaveLen(2))
 			})
-			It("should include packer.json.builders.ptpl", func() {
-				path := filepath.Join(tmpDir, "packer.json.builders.ptpl")
+			It("should include packer.json.builders.partial", func() {
+				path := filepath.Join(tmpDir, "packer.json.builders.partial")
 				Expect(rootTemplate.FindTemplate(path)).ToNot(BeNil())
 			})
-			It("should include nano/packer.json.provisioners.ptpl", func() {
-				path := filepath.Join(tmpDir, "nano/packer.json.provisioners.ptpl")
+			It("should include nano/packer.json.provisioners.partial", func() {
+				path := filepath.Join(tmpDir, "nano/packer.json.provisioners.partial")
 				Expect(rootTemplate.FindTemplate(path)).ToNot(BeNil())
 			})
 		})
 
-		Describe("Vagrantfile.tpl root template", func() {
+		Describe("Vagrantfile.template root template", func() {
 			var rootTemplate tpl.Templater
 			JustBeforeEach(func() {
-				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Vagrantfile.tpl"))
+				rootTemplate = templates.FindTemplate(filepath.Join(tmpDir, "Vagrantfile.template"))
 			})
 			It("should be found", func() {
 				Expect(rootTemplate).ToNot(BeNil())

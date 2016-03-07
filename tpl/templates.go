@@ -50,7 +50,7 @@ var listRootTemplatesFn = listRootTemplates
 func listRootTemplates(baseDir string) []string {
 	rootTemplates := []string{}
 	err := filepath.Walk(baseDir, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() || filepath.Ext(path) != ".tpl" {
+		if info.IsDir() || filepath.Ext(path) != ".template" {
 			return nil
 		}
 		rootTemplates = append(rootTemplates, path)
